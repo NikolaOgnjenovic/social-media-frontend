@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body, html, #root {
+    min-height: 100vh;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    font-weight: 200;
+    text-align: center;
+    --primary: #F5EDCE;
+    --secondary: #150050;
+    --secondary-light: #380fb4;
+    color: var(--secondary);
+}
+
+header {
+    background: var(--secondary);
+}
+
+header > h1 {
+    font-family: Argentum B, sans-serif;
+    font-weight: 500;
+    color: var(--primary);
+    font-size: 2.5rem;
+    text-transform: uppercase;
+}
+
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+nav {
+    padding: 2rem;
+}
+
+nav a {
+    color: var(--primary);
+    font-weight: 400;
+    text-decoration: none;
+    font-size: 1.2rem;
+    padding: 1rem;
+    margin: 1.2rem;
+}
+
+nav a:hover {
+    background-color: var(--primary);
+    color: var(--secondary);
+}
+
+.active-link {
+    background-color: var(--primary);
+    color: var(--secondary);
+}
+
+footer {
+    background: var(--secondary);
+    padding: 1rem;
+    font-size: 1.2rem;
+}
+
+footer > p, footer a {
+    color: var(--primary);
+}
+
+.border {
+    border: 1px solid var(--secondary);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+img {
+    border-radius: 5px;
+}
+
+.image-title {
+    font-size: 1.4rem;
+    margin-top: 0.2rem;
+    font-weight: bold;
+}
+
+.author-name {
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+    font-weight: bold;
+}
+
+.comment-list {
+    margin-top: 10px;
+}
+
+.comment-item {
+    border: 1px solid var(--secondary);
+    padding: 5px;
+}
+
+/* Add your CSS styles here */
+.image-button {
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 5px;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.image-button img {
+    width: 2rem;
+    height: 2rem;
+}
+
+select {
+    font-weight: 300;
+    color: var(--secondary);
+    background: var(--primary);
+    padding: 0.8rem;
+    border: 1px solid var(--secondary);
+}
+
+label {
+    font-weight: 300;
+}
+
+/* Selected folder */
+.bold {
+    font-weight: 500;
+    color: #57a60d;
+}

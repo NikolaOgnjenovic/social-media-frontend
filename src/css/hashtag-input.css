@@ -1,0 +1,52 @@
+.hashtag-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--secondary);
+    padding: 1rem;
+    margin: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hashtag-input {
+    width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
+.extracted-hashtags {
+    width: 15rem; /* Set a fixed width to the container */
+    max-height: 100px; /* Optional: Set a maximum height to add a vertical scrollbar if needed */
+    overflow-y: auto; /* Optional: Enable vertical scrollbar if the content exceeds the height */
+    overflow-x: auto;
+    white-space: nowrap; /* Keeps the hashtags in a single line */
+}
+
+.extracted-hashtags ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.extracted-hashtags li {
+    display: inline-block;
+    font-size: 14px;
+    margin: 5px 3px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background-color: #f0f0f0;
+}
+
+.extracted-hashtags::-webkit-scrollbar {
+    width: 8px;
+}
+
+.extracted-hashtags::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}

@@ -1,0 +1,92 @@
+.image-with-comments {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #ffffff;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.author {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.tags {
+    font-size: 20px;
+}
+
+.delete-button,
+.like-button,
+.comment-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    padding: 0;
+}
+
+.delete-button img,
+.like-button img,
+.comment-button img {
+    width: 24px;
+    height: 24px;
+}
+
+.interaction-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.like-counter {
+    font-size: 18px;
+}
+
+.comment-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.comment-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.author-name {
+    font-weight: bold;
+}
+
+.comment-text {
+    font-size: 16px;
+}
+
+.comment-list {
+    margin-top: 10px;
+    flex-grow: 1;
+    width: 100%;
+    word-wrap: break-word;
+    overflow: auto;
+    height: fit-content;
+}
