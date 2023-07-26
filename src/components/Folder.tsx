@@ -1,8 +1,9 @@
-import React from "react";
+import React, {useState} from "react";
 import {Folder, Image, User} from "../types/global";
-import * as folderService from "../services/folder-service.ts";
-import {FolderImage} from "./folder-image.tsx";
-import {getUserId} from "../services/auth-service.ts";
+import * as folderService from "../services/FolderService.ts";
+import {FolderImage} from "./FolderImage.tsx";
+import {getUserId} from "../services/AuthService.ts";
+import GenericConfirmationDialog from "./GenericConfirmationDialog.tsx";
 
 export const FolderFC: React.FC<{
     folder: Folder,
@@ -19,9 +20,20 @@ export const FolderFC: React.FC<{
           users,
           setImages
       }) => {
+    const [showFolderDeletionDialog, setShowFolderDeletionDialog] = useState(false);
+
     async function handleFolderDelete(folderId: number) {
         setFolders(await folderService.deleteFolder(folders, folderId));
     }
+
+    function handleOpenFolderDeletionDialog() {
+        setShowFolderDeletionDialog(true);
+    }
+
+    function handleCloseFolderDeletionDialog() {
+        setShowFolderDeletionDialog(false);
+    }
+
 
     if (folder.id == -1) {
         return (
@@ -47,7 +59,7 @@ export const FolderFC: React.FC<{
         <div className="folder-card">
             <p className="folder-title text-3xl">{folder.title}</p>
             {folder.authorId === getUserId() && (
-                <button className="image-button" type="submit" onClick={() => handleFolderDelete(folder.id)}>
+                <button className="image-button" type="submit" onClick={handleOpenFolderDeletionDialog}>
                     <img src="/delete.svg" alt="Delete"/>
                 </button>
             )}
@@ -64,6 +76,18 @@ export const FolderFC: React.FC<{
                         users={users}
                     />
                 ))}
+            {
+                showFolderDeletionDialog &&
+                <GenericConfirmationDialog
+                    message="Delete folder"
+                    isOpen={showFolderDeletionDialog}
+                    onConfirm={() => {
+                        handleFolderDelete(folder.id);
+                        handleCloseFolderDeletionDialog();
+                    }}
+                    onClose={handleCloseFolderDeletionDialog}
+                />
+            }
         </div>
     )
 }

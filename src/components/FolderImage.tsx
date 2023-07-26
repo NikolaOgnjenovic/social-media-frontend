@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {Folder, Image, User} from "../types/global";
-import * as imageService from "../services/image-service.ts";
-import FolderSelectionModal from "./folder-selection-modal.tsx";
-import {getUserId} from "../services/auth-service.ts";
-import EditorSelectionModal from "./editor-selection-modal.tsx";
-import ImageEditModal from "./image-edit-modal.tsx";
+import * as imageService from "../services/ImageService.ts";
+import FolderSelectionModal from "./FolderSelectionModal.tsx";
+import {getUserId} from "../services/AuthService.ts";
+import EditorSelectionModal from "./EditorSelectionModal.tsx";
+import ImageEditModal from "./ImageEditModal.tsx";
 import "../css/image-with-comments.css";
+import GenericConfirmationDialog from "./GenericConfirmationDialog.tsx";
 
 export const FolderImage: React.FC<{
     image: Image,
@@ -24,6 +25,7 @@ export const FolderImage: React.FC<{
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
     const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
     const [isImageEditorModalOpen, setIsImageEditorModalOpen] = useState(false);
+    const [showImageDeletionDialog, setShowImageDeletionDialog] = useState(false);
 
     useEffect(() => {
         if (!isImageEditorModalOpen) {
@@ -33,6 +35,15 @@ export const FolderImage: React.FC<{
 
     const loadImage = () => {
         imageService.getImageFilePath(image.id).then((url) => setImageUrl(url));
+    }
+
+
+    function handleOpenImageDeletionDialog() {
+        setShowImageDeletionDialog(true);
+    }
+
+    function handleCloseImageDeletionDialog() {
+        setShowImageDeletionDialog(false);
     }
 
     async function handleImageDelete() {
@@ -96,7 +107,7 @@ export const FolderImage: React.FC<{
                             <img src="/editors.svg" alt="Update editors"/>
                         </button>
 
-                        <button className="image-button" type="submit" onClick={() => handleImageDelete()}>
+                        <button className="image-button" type="submit" onClick={handleOpenImageDeletionDialog}>
                             <img src="/delete.svg" alt="Delete"/>
                         </button>
 
@@ -133,6 +144,19 @@ export const FolderImage: React.FC<{
                         setVisible={setIsImageEditorModalOpen}
                     />
                 )}
+
+                {
+                    showImageDeletionDialog &&
+                    <GenericConfirmationDialog
+                        message="Delete image"
+                        isOpen={showImageDeletionDialog}
+                        onConfirm={() => {
+                            handleImageDelete();
+                            handleCloseImageDeletionDialog();
+                        }}
+                        onClose={handleCloseImageDeletionDialog}
+                    />
+                }
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
 import {Image, User} from "../types/global";
-import {getImages} from "./image-service.ts";
+import {getImages} from "./ImageService.ts";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 

@@ -1,13 +1,13 @@
 import {ChangeEvent, useEffect, useState} from 'react';
-import * as imageService from "../services/image-service.ts";
-import * as commentService from "../services/comment-service.ts";
-import {ImageWithComments} from "../components/image-with-comments.tsx";
+import * as imageService from "../services/ImageService.ts";
+import * as commentService from "../services/CommentService.ts";
+import {ImageWithComments} from "../components/ImageWithComments.tsx";
 import {Comment, Image} from "../types/global";
-import {getUserId} from "../services/auth-service.ts";
+import {getUserId} from "../services/AuthService.ts";
 import {useNavigate} from "react-router-dom";
 import "../css/interaction-section.css";
-import HashtagInput from "../components/hashtag-input.tsx";
-import ImageEditModal from "../components/image-edit-modal.tsx";
+import HashtagInput from "../components/HashtagInput.tsx";
+import ImageEditModal from "../components/ImageEditModal.tsx";
 
 function Feed() {
     const [images, setImages] = useState<Image[]>([]);
@@ -43,7 +43,7 @@ function Feed() {
 
     // Fetch images, comments, and folders
     async function loadData() {
-        setImages(await imageService.getImages());
+        setImages(await imageService.getImagesWithPagination(1, 10));
         setComments(await commentService.getComments());
 
         if (selectedImageName != null) {
@@ -115,7 +115,7 @@ function Feed() {
     }
 
     function updateImage(imageFile: File) {
-        handleImageCreate(getUserId(), ["Italy", "Trip"], imageFile);
+        handleImageCreate(getUserId(), hashtags, imageFile);
     }
 
     return (

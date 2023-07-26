@@ -10,10 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.8.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "@pqina/pintura": "^8.60.13",
     "@pqina/react-pintura": "^9.0.1",
     "@types/chart.js": "^2.9.37",
     "chart.js": "^4.3.0",
+    "framer-motion": "^10.13.1",
     "pintura": "^0.3.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

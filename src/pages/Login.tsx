@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
-import * as authService from "../services/auth-service.ts";
-import {getUserId} from "../services/auth-service.ts";
+import * as authService from "../services/AuthService.ts";
+import {getUserId} from "../services/AuthService.ts";
 import {useNavigate} from "react-router-dom";
 import "../css/login.css";
 

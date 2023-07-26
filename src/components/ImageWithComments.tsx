@@ -1,9 +1,10 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
-import * as imageService from "../services/image-service.ts";
-import * as commentService from "../services/comment-service.ts";
+import * as imageService from "../services/ImageService.ts";
+import * as commentService from "../services/CommentService.ts";
 import {Comment, Image} from "../types/global";
-import {getUserId} from "../services/auth-service.ts";
+import {getUserId} from "../services/AuthService.ts";
 import "../css/image-with-comments.css";
+import GenericConfirmationDialog from "./GenericConfirmationDialog.tsx";
 
 export const ImageWithComments: React.FC<{
     image: Image,
@@ -21,6 +22,9 @@ export const ImageWithComments: React.FC<{
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [showComments, setShowComments] = useState(false);
     const [newCommentContent, setNewCommentContent] = useState('');
+    const [showImageDeletionDialog, setShowImageDeletionDialog] = useState(false);
+    const [showCommentDeletionDialog, setShowCommentDeletionDialog] = useState(false);
+    const [commentDeletionId, setCommentDeletionId] = useState(-1);
     const userId = getUserId();
 
     async function handleCommentCreate(newCommentContent: string) {
@@ -29,6 +33,14 @@ export const ImageWithComments: React.FC<{
 
     async function handleImageLike(updatedLikeCount: number) {
         setImages(await imageService.updateImageLikeCount(images, image.id, updatedLikeCount));
+    }
+
+    function handleOpenImageDeletionDialog() {
+        setShowImageDeletionDialog(true);
+    }
+
+    function handleCloseImageDeletionDialog() {
+        setShowImageDeletionDialog(false);
     }
 
     async function handleImageDelete() {
@@ -44,6 +56,15 @@ export const ImageWithComments: React.FC<{
         setComments(await commentService.updateCommentLikeCount(comments, commentId, updatedLikeCount));
     }
 
+    function handleOpenCommentDeletionDialog(commentId: number) {
+        setShowCommentDeletionDialog(true);
+        setCommentDeletionId(commentId);
+    }
+
+    function handleCloseCommentDeletionDialog() {
+        setShowCommentDeletionDialog(false);
+    }
+
     async function handleCommentDelete(commentId: number) {
         const updatedComments = await commentService.deleteComment(comments, commentId);
         setComments(updatedComments);
@@ -55,6 +76,8 @@ export const ImageWithComments: React.FC<{
 
     function loadImage() {
         imageService.getCompressedImageFilePath(image.id).then((url) => setImageUrl(url));
+        // TODO: figure out why tags are being sent as an array of one item??
+        image.tags = image.tags[0].split(",");
     }
 
     function toggleCommentVisibility() {
@@ -70,16 +93,17 @@ export const ImageWithComments: React.FC<{
             <p className="author">Author: {image.authorId}</p>
             <img className="image" src={imageUrl} alt={`Image ${image.id}`}/>
             <p className="title">{image.title}</p>
-            <div className="extracted-hashtags">Tags:
-                <ul>
-                    {image.tags.map((hashtag, index) => (
+            <div className="extracted-hashtags">
+                {image.tags.map((hashtag, index) => (
+                    <ul>
                         <li key={index}>{hashtag}</li>
-                    ))}
-                </ul>
+                    </ul>
+                ))}
             </div>
 
             {image.editorIds.includes(getUserId()) && (
-                <button className="delete-button" type="submit" onClick={handleImageDelete}>
+                <button className="delete-button" type="submit" onClick={handleOpenImageDeletionDialog}>
+                    {/*<button className="delete-button" type="submit" onClick={handleImageDelete}>*/}
                     <img src="/delete.svg" alt="Delete"/>
                 </button>
             )}
@@ -129,13 +153,38 @@ export const ImageWithComments: React.FC<{
 
                                 {comment.authorId === getUserId() && (
                                     <button className="delete-button" type="submit"
-                                            onClick={() => handleCommentDelete(comment.id)}>
+                                            onClick={() => handleOpenCommentDeletionDialog(comment.id)}>
                                         <img src="/delete.svg" alt="Delete"/>
                                     </button>
                                 )}
                             </div>
                         ))}
                 </div>
+            }
+
+            {
+                showImageDeletionDialog &&
+                <GenericConfirmationDialog
+                    message="Delete image"
+                    isOpen={showImageDeletionDialog}
+                    onConfirm={() => {
+                        handleImageDelete();
+                        handleCloseImageDeletionDialog();
+                    }}
+                    onClose={handleCloseImageDeletionDialog}
+                />
+            }
+            {
+                showCommentDeletionDialog &&
+                <GenericConfirmationDialog
+                    message="Delete comment"
+                    isOpen={showCommentDeletionDialog}
+                    onConfirm={() => {
+                        handleCommentDelete(commentDeletionId);
+                        handleCloseCommentDeletionDialog();
+                    }}
+                    onClose={handleCloseCommentDeletionDialog}
+                />
             }
         </div>
     );

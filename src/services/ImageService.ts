@@ -4,7 +4,6 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Sends a POST request to upload an image to the server
 export async function createImage(images: Image[], authorId: number, tags: string[], title: String, imageFile: File): Promise<Image[]> {
-    console.log(localStorage.getItem("jwtToken"));
     const updatedImages = [...images];
     const formData = new FormData();
     formData.append("authorId", authorId.toString());
@@ -42,6 +41,20 @@ export async function getImages(): Promise<Image[]> {
         .catch((err) => {
             alert("Error getting images: " + err.message);
         });
+    return images;
+}
+
+export async function getImagesWithPagination(page: number, pageSize: number): Promise<Image[]> {
+    let images: Image[] = [];
+    await fetch(BACKEND_URL + "/api/v1/images/page/" + page + "/" + pageSize)
+        .then(res => res.json())
+        .then(data => {
+            images = data;
+        })
+        .catch((err) => {
+            alert("error getting images: " + err.message);
+        });
+
     return images;
 }
 

@@ -1,10 +1,10 @@
 import {useEffect, useState} from "react";
-import * as imageService from "../services/image-service.ts";
-import * as folderService from "../services/folder-service.ts";
-import * as userService from "../services/user-service.ts";
+import * as imageService from "../services/ImageService.ts";
+import * as folderService from "../services/FolderService.ts";
+import * as userService from "../services/UserService.ts";
 import {Folder, Image, User} from "../types/global";
-import {FolderFC} from "../components/folder.tsx";
-import {getUserId} from "../services/auth-service.ts";
+import {FolderFC} from "../components/Folder.tsx";
+import {getUserId} from "../services/AuthService.ts";
 import {useNavigate} from "react-router-dom";
 import "../css/folders.css";
 
@@ -34,7 +34,6 @@ function Folders() {
         }
     }, [isLoggedIn]);
 
-    // Fetch images, comments, and folders
     async function loadData() {
         setImages(await imageService.getImagesByUserId());
         setFolders(await folderService.getFoldersByUserId());

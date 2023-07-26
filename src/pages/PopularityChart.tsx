@@ -1,9 +1,9 @@
-import UserPopularityChart from "../components/user-popularity-chart.tsx";
+import UserPopularityChart from "../components/UserPopularityChart.tsx";
 import "../css/chart.css";
-import {getUserPopularity} from "../services/user-service.ts";
+import {getUserPopularity} from "../services/UserService.ts";
 import {useEffect, useState} from "react";
 
-function Chart() {
+function PopularityChart() {
     const [data, setData] = useState<{ username: string; popularity: number; }[]>(
         []
     );
@@ -27,4 +27,4 @@ function Chart() {
     );
 }
 
-export default Chart;
+export default PopularityChart;
