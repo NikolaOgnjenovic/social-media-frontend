@@ -3,11 +3,13 @@ import * as authService from "../services/AuthService.ts";
 import {getUserId} from "../services/AuthService.ts";
 import {useNavigate} from "react-router-dom";
 import "../css/login.css";
+import ErrorDialog from "../components/ErrorDialog.tsx";
 
 function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(getUserId() != -1);
+    const [showInvalidCredentialsError, setShowInvalidCredentialsError] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,12 +27,20 @@ function Login() {
         setPassword(event.target.value);
     }
 
+    function handleOpenInvalidCredentialsError() {
+        setShowInvalidCredentialsError(true);
+    }
+
+    function handleCloseInvalidCredentialsError() {
+        setShowInvalidCredentialsError(false);
+    }
+
     async function handleLogin() {
         await authService.login(username, password).then((success) => {
             if (success) {
                 setIsLoggedIn(true);
             } else {
-                alert("Invalid credentials");
+                handleOpenInvalidCredentialsError();
             }
         })
     }
@@ -61,6 +71,15 @@ function Login() {
                     <button className="border" type="button" onClick={handleLogin}>Login</button>
                 </div>
             </div>
+
+            {
+                showInvalidCredentialsError &&
+                <ErrorDialog
+                    message="Invalid credentials"
+                    isOpen={showInvalidCredentialsError}
+                    onClose={handleCloseInvalidCredentialsError}
+                />
+            }
         </div>
     );
 }

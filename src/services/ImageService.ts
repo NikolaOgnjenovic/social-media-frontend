@@ -11,209 +11,186 @@ export async function createImage(images: Image[], authorId: number, tags: strin
     formData.append("title", title.toString());
     formData.append("image", imageFile);
 
-    await fetch(BACKEND_URL + "/api/v1/images", {
+    const response = await fetch(BACKEND_URL + "/api/v1/images", {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
         },
         method: "POST",
         body: formData
-    })
-        .then((res) => res.json())
-        .then((image: Image) => {
-            updatedImages.push(image);
-        })
-        .catch((err) => {
-                alert("Error creating image: " + err.message);
-            }
-        );
+    });
 
+    if (!response.ok) {
+        throw new Error("Failed to create image.");
+    }
+
+    const image = await response.json();
+    updatedImages.push(image);
     return updatedImages;
 }
 
 // Sends a GET request which, if successful, populates the images array
 export async function getImages(): Promise<Image[]> {
-    let images: Image[] = [];
-    await fetch(BACKEND_URL + "/api/v1/images")
-        .then(res => res.json())
-        .then(data => {
-            images = data;
-        })
-        .catch((err) => {
-            alert("Error getting images: " + err.message);
-        });
-    return images;
+    const response = await fetch(BACKEND_URL + "/api/v1/images");
+
+    if (!response.ok) {
+        throw new Error("Failed to get images.");
+    }
+
+    return await response.json();
 }
 
 export async function getImagesWithPagination(page: number, pageSize: number): Promise<Image[]> {
-    let images: Image[] = [];
-    await fetch(BACKEND_URL + "/api/v1/images/page/" + page + "/" + pageSize)
-        .then(res => res.json())
-        .then(data => {
-            images = data;
-        })
-        .catch((err) => {
-            alert("error getting images: " + err.message);
-        });
+    const response = await fetch(BACKEND_URL + "/api/v1/images/page/" + page + "/" + pageSize);
 
-    return images;
+    if (!response.ok) {
+        throw new Error("Failed to get images on page " + page + " with page size " + pageSize);
+    }
+
+    return await response.json();
 }
 
 export async function getImagesByUserId(): Promise<Image[]> {
-    let images: Image[] = [];
-    await fetch(BACKEND_URL + "/api/v1/user-images", {
+    const response = await fetch(BACKEND_URL + "/api/v1/user-images", {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
         }
-    })
-        .then(res => res.json())
-        .then(data => {
-            images = data;
-        })
-        .catch((err) => {
-            alert("Error getting images: " + err.message);
-        });
-    return images;
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to get images by user id");
+    }
+
+    return await response.json();
 }
 
 export async function getImageFilePath(id: number): Promise<string> {
-    let filePath = "";
+    const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/file");
 
-    await fetch(BACKEND_URL + "/api/v1/images/" + id + "/file",
-        {})
-        .then(res => res.blob())
-        .then(blob => {
-            filePath = URL.createObjectURL(blob);
-        })
-        .catch((err) => {
-            alert("Error getting image file: " + err.message);
-        });
+    if (!response.ok) {
+        throw new Error("Failed to get image file");
+    }
 
-    return filePath;
+    return URL.createObjectURL(await response.blob());
 }
 
 export async function getCompressedImageFilePath(id: number): Promise<string> {
-    let filePath = "";
+    const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/compressed-file");
 
-    await fetch(BACKEND_URL + "/api/v1/images/" + id + "/compressed-file",
-        {})
-        .then(res => res.blob())
-        .then(blob => {
-            filePath = URL.createObjectURL(blob);
-        })
-        .catch((err) => {
-            alert("Error getting image file: " + err.message);
-        });
+    if (!response.ok) {
+        throw new Error("Failed to get compressed image file");
+    }
 
-    return filePath;
+    return URL.createObjectURL(await response.blob());
 }
 
 // Sends a PATCH request which, if successful, updates the like count of the image with the given id
 export async function updateImageLikeCount(images: Image[], id: number, updatedLikeCount: number): Promise<Image[]> {
     const updatedImages = [...images];
-    await fetch(BACKEND_URL + "/api/v1/images/" + id + "/like-count", {
+    const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/like-count", {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
         },
         method: "PATCH",
         body: JSON.stringify(updatedLikeCount)
-    })
-        .then(() => {
-            for (let i = 0; i < updatedImages.length; i++) {
-                if (updatedImages[i].id == id) {
-                    updatedImages[i].likeCount = updatedLikeCount;
-                    break;
-                }
-            }
-        })
-        .catch((err) => {
-            alert("Error liking image: " + err.message);
-        });
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to update image like count.");
+    }
+
+    for (let i = 0; i < updatedImages.length; i++) {
+        if (updatedImages[i].id === id) {
+            updatedImages[i].likeCount = updatedLikeCount;
+            break;
+        }
+    }
 
     return updatedImages;
 }
 
+
 // Sends a PATCH request which, if successful, updates the folder id of the image with the given id
 export async function updateImageFolderId(images: Image[], id: number, updatedFolderId: number): Promise<Image[]> {
     const updatedImages = [...images];
-    await fetch(BACKEND_URL + "/api/v1/images/" + id + "/folder-id", {
+    const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/folder-id", {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
         },
         method: "PATCH",
         body: JSON.stringify(updatedFolderId)
-    })
-        .then(() => {
-            for (let i = 0; i < updatedImages.length; i++) {
-                if (updatedImages[i].id == id) {
-                    updatedImages[i].folderId = updatedFolderId;
-                    break;
-                }
-            }
-        })
-        .catch((err) => {
-            alert("Error updating image folder id: " + err.message);
-        });
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to update image folder id.");
+    }
+
+    for (let i = 0; i < updatedImages.length; i++) {
+        if (updatedImages[i].id === id) {
+            updatedImages[i].folderId = updatedFolderId;
+            break;
+        }
+    }
 
     return updatedImages;
 }
 
-export async function updateImageEditorIds(images: Image[], id: number, updatedEditorIds: number[]) {
+
+export async function updateImageEditorIds(images: Image[], id: number, updatedEditorIds: number[]): Promise<Image[]> {
     const updatedImages = [...images];
-    await fetch(BACKEND_URL + "/api/v1/images/" + id + "/editor-ids", {
+    const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/editor-ids", {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
         },
         method: "PATCH",
         body: JSON.stringify(updatedEditorIds)
-    })
-        .then(() => {
-            for (let i = 0; i < updatedImages.length; i++) {
-                if (updatedImages[i].id == id) {
-                    updatedImages[i].editorIds = updatedEditorIds;
-                    break;
-                }
-            }
-        })
-        .catch((err) => {
-            alert("Error updating image editor ids: " + err.message);
-        });
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to update image editor ids.");
+    }
+
+    for (let i = 0; i < updatedImages.length; i++) {
+        if (updatedImages[i].id === id) {
+            updatedImages[i].editorIds = updatedEditorIds;
+            break;
+        }
+    }
 
     return updatedImages;
 }
 
-export function updateFile(id: number, imageFile: File): void {
+
+export async function updateFile(id: number, imageFile: File): Promise<void> {
     const formData = new FormData();
     formData.append("image", imageFile);
-    fetch(BACKEND_URL + "/api/v1/images/" + id + "/file", {
+    const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/file", {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
         },
         method: "PATCH",
         body: formData
-    })
-        .catch((err) => {
-                alert("Error creating image: " + err.message);
-            }
-        );
-}
+    });
 
-export async function deleteImage(images: Image[], imageId: number): Promise<Image[]> {
-    try {
-        await fetch(BACKEND_URL + "/api/v1/images/" + imageId, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
-            },
-            method: "DELETE"
-        });
-
-        // Filter out the deleted image from the images array
-        return images.filter((image) => image.id !== imageId);
-    } catch (err: any) {
-        alert("Error deleting image: " + err.message);
-        return images; // Return the original array in case of an error
+    if (!response.ok) {
+        throw new Error("Failed to update image file.");
     }
 }
 
+export async function deleteImage(images: Image[], imageId: number): Promise<Image[]> {
+    const response = await fetch(BACKEND_URL + "/api/v1/images/" + imageId, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+        },
+        method: "DELETE"
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to delete image.");
+    }
+
+    // Filter out the deleted image from the images array
+    return images.filter((image) => image.id !== imageId);
+}

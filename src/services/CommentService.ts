@@ -4,7 +4,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export async function createComment(comments: Comment[], authorId: number, imageId: number, content: string): Promise<Comment[]> {
     const updatedComments: Comment[] = [...comments];
-    await fetch(BACKEND_URL + "/api/v1/comments", {
+    const response = await fetch(BACKEND_URL + "/api/v1/comments", {
         headers: {'Content-Type': 'application/json'},
         method: "POST",
         body: JSON.stringify({
@@ -12,80 +12,78 @@ export async function createComment(comments: Comment[], authorId: number, image
             imageId: imageId,
             content: content
         })
-    })
-        .then((res) => res.json())
-        .then((comment: Comment) => updatedComments.push(comment))
-        .catch((err) => {
-            alert("Error creating comment: " + err.message);
-        });
+    });
 
+    if (!response.ok) {
+        throw new Error("Failed to create comment.");
+    }
+
+    const comment = await response.json();
+    updatedComments.push(comment);
     return updatedComments;
 }
 
+
 // Sends a GET request which, if successful, populates the comments array
 export async function getComments(): Promise<Comment[]> {
-    let comments: Comment[] = [];
-    await fetch(BACKEND_URL + "/api/v1/comments")
-        .then(res => res.json())
-        .then(data => {
-            comments = data;
-        }).catch((err) => {
-            alert("Error getting comments: " + err.message);
-        });
-    return comments;
+    const response = await fetch(BACKEND_URL + "/api/v1/comments");
+
+    if (!response.ok) {
+        throw new Error("Failed to get comments.");
+    }
+
+    return response.json();
 }
 
 export async function getCommentsByUserId(): Promise<Comment[]> {
-    let comments: Comment[] = [];
-    await fetch(BACKEND_URL + "/api/v1/comments/user", {
+    const response = await fetch(BACKEND_URL + "/api/v1/comments/user", {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
         }
-    })
-        .then(res => res.json())
-        .then(data => {
-            comments = data;
-        }).catch((err) => {
-            alert("Error getting comments: " + err.message);
-        });
-    return comments;
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to get comments.");
+    }
+
+    return response.json();
 }
 
 // Sends a PATCH request which, if successful, updates the like count of the comment with the given id
 export async function updateCommentLikeCount(comments: Comment[], id: number, updatedLikeCount: number): Promise<Comment[]> {
     const updatedComments: Comment[] = [...comments];
-
-    await fetch(BACKEND_URL + "/api/v1/comments/" + id + "/like-count", {
+    const response = await fetch(BACKEND_URL + "/api/v1/comments/" + id + "/like-count", {
         headers: {'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem("jwtToken")}`},
         method: "PATCH",
         body: JSON.stringify(updatedLikeCount)
-    }).then(() => {
-            for (let i = 0; i < updatedComments.length; i++) {
-                if (updatedComments[i].id == id) {
-                    updatedComments[i].likeCount = updatedLikeCount;
-                    break;
-                }
-            }
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to update comment like count.");
+    }
+
+    for (let i = 0; i < updatedComments.length; i++) {
+        if (updatedComments[i].id === id) {
+            updatedComments[i].likeCount = updatedLikeCount;
+            break;
         }
-    ).catch((err) => {
-        alert("Error liking comment: " + err.message);
-    })
+    }
+
     return updatedComments;
 }
 
 export async function deleteComment(comments: Comment[], commentId: number): Promise<Comment[]> {
-    try {
-        await fetch(BACKEND_URL + "/api/v1/comments/" + commentId, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
-            },
-            method: "DELETE"
-        });
+    const response = await fetch(BACKEND_URL + "/api/v1/comments/" + commentId, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+        },
+        method: "DELETE"
+    });
 
-        // Filter out the deleted comment from the comments array
-        return comments.filter((comment) => comment.id !== commentId);
-    } catch (err: any) {
-        alert("Error deleting comment: " + err.message);
-        return comments; // Return the original array in case of an error
+    if (!response.ok) {
+        throw new Error("Failed to delete comment.");
     }
+
+    // Filter out the deleted comment from the comments array
+    return comments.filter((comment) => comment.id !== commentId);
 }

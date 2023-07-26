@@ -27,14 +27,11 @@ function getPopularity(images: Image[], userId: number) {
 
 // Sends a GET request which, if successful, populates the users array
 export async function getUsers(): Promise<User[]> {
-    let users: User[] = [];
-    await fetch(BACKEND_URL + "/api/v1/users")
-        .then(res => res.json())
-        .then(data => {
-            users = data;
-        })
-        .catch((err) => {
-            alert("Error getting images: " + err.message);
-        });
-    return users;
+    const response = await fetch(BACKEND_URL + "/api/v1/users");
+
+    if (!response.ok) {
+        throw new Error("Failed to get users.");
+    }
+
+    return response.json();
 }

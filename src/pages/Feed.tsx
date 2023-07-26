@@ -8,6 +8,7 @@ import {useNavigate} from "react-router-dom";
 import "../css/interaction-section.css";
 import HashtagInput from "../components/HashtagInput.tsx";
 import ImageEditModal from "../components/ImageEditModal.tsx";
+import ErrorDialog from "../components/ErrorDialog.tsx";
 
 function Feed() {
     const [images, setImages] = useState<Image[]>([]);
@@ -18,6 +19,8 @@ function Feed() {
     const [newImageFile, setNewImageFile] = useState<File | null>(null);
     const [newImageTitle, setNewImageTitle] = useState<string>("");
     const [hashtags, setHashtags] = useState<string[]>([]);
+    const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
     const navigate = useNavigate();
     const selectedImageName = document.getElementById('selected-image-name');
 
@@ -106,8 +109,13 @@ function Feed() {
             return;
         }
 
-        const updatedImages = await imageService.createImage(images, authorId, tags, newImageTitle, imageFile);
-        setImages(updatedImages);
+        try {
+            const updatedImages = await imageService.createImage(images, authorId, tags, newImageTitle, imageFile);
+            setImages(updatedImages);
+        } catch {
+            setErrorMessage("Failed to create image. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        }
     }
 
     function handleOpenImageEditorsModal() {
@@ -116,6 +124,14 @@ function Feed() {
 
     function updateImage(imageFile: File) {
         handleImageCreate(getUserId(), hashtags, imageFile);
+    }
+
+    function handleOpenErrorMessageDialog() {
+        setShowErrorMessageDialog(true);
+    }
+
+    function handleCloseErrorMessageDialog() {
+        setShowErrorMessageDialog(false);
     }
 
     return (
@@ -178,6 +194,15 @@ function Feed() {
                     )
                 }
             </div>
+
+            {
+                showErrorMessageDialog &&
+                <ErrorDialog
+                    message={errorMessage}
+                    isOpen={showErrorMessageDialog}
+                    onClose={handleCloseErrorMessageDialog}
+                />
+            }
         </>
     )
 }
