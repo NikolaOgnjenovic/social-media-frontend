@@ -3,7 +3,6 @@ services:
   frontend:
     image: node:alpine
     container_name: frontend
-    entrypoint: /bin/sh
     ports:
       - "5173:5173"
     working_dir: /srv/app
@@ -11,4 +10,4 @@ services:
       - type: bind
         source: ./
         target: /srv/app
-    tty: true
+    command: npm run dev
