@@ -1,10 +1,11 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
-import * as imageService from "../services/ImageService.ts";
-import * as commentService from "../services/CommentService.ts";
+import * as imageService from "../services/ImageService";
+import * as commentService from "../services/CommentService";
 import {Comment, Image} from "../types/global";
-import {getUserId} from "../services/AuthService.ts";
+import {getUserId} from "../services/AuthService";
 import "../css/image-with-comments.css";
-import GenericConfirmationDialog from "./GenericConfirmationDialog.tsx";
+import GenericConfirmationDialog from "./GenericConfirmationDialog";
+import ErrorDialog from "./ErrorDialog.tsx";
 
 export const ImageWithComments: React.FC<{
     image: Image,
@@ -25,14 +26,26 @@ export const ImageWithComments: React.FC<{
     const [showImageDeletionDialog, setShowImageDeletionDialog] = useState(false);
     const [showCommentDeletionDialog, setShowCommentDeletionDialog] = useState(false);
     const [commentDeletionId, setCommentDeletionId] = useState(-1);
+    const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
     const userId = getUserId();
 
     async function handleCommentCreate(newCommentContent: string) {
-        setComments(await commentService.createComment(comments, userId, image.id, newCommentContent));
+        try {
+            setComments(await commentService.createComment(comments, userId, image.id, newCommentContent));
+        } catch {
+            setErrorMessage("Failed to create comment. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        }
     }
 
     async function handleImageLike(updatedLikeCount: number) {
-        setImages(await imageService.updateImageLikeCount(images, image.id, updatedLikeCount));
+        try {
+            setImages(await imageService.updateImageLikeCount(images, image.id, updatedLikeCount));
+        } catch {
+            setErrorMessage("Failed to like image. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        }
     }
 
     function handleOpenImageDeletionDialog() {
@@ -44,8 +57,12 @@ export const ImageWithComments: React.FC<{
     }
 
     async function handleImageDelete() {
-        const updatedImages = await imageService.deleteImage(images, image.id);
-        setImages(updatedImages);
+        try {
+            setImages(await imageService.deleteImage(images, image.id));
+        } catch {
+            setErrorMessage("Failed to delete image. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        }
     }
 
     function handleCommentContentUpdate(event: ChangeEvent<HTMLInputElement>) {
@@ -53,7 +70,13 @@ export const ImageWithComments: React.FC<{
     }
 
     async function handleCommentLike(commentId: number, updatedLikeCount: number) {
-        setComments(await commentService.updateCommentLikeCount(comments, commentId, updatedLikeCount));
+        try {
+            const updatedComments = await commentService.updateCommentLikeCount(comments, commentId, updatedLikeCount);
+            setComments(updatedComments);
+        } catch {
+            setErrorMessage("Failed to like comment. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        }
     }
 
     function handleOpenCommentDeletionDialog(commentId: number) {
@@ -66,8 +89,20 @@ export const ImageWithComments: React.FC<{
     }
 
     async function handleCommentDelete(commentId: number) {
-        const updatedComments = await commentService.deleteComment(comments, commentId);
-        setComments(updatedComments);
+        try {
+            setComments(await commentService.deleteComment(comments, commentId));
+        } catch {
+            setErrorMessage("Failed to delete comment. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        }
+    }
+
+    function handleOpenErrorMessageDialog() {
+        setShowErrorMessageDialog(true);
+    }
+
+    function handleCloseErrorMessageDialog() {
+        setShowErrorMessageDialog(false);
     }
 
     useEffect(() => {
@@ -75,8 +110,9 @@ export const ImageWithComments: React.FC<{
     }, [image.id]);
 
     function loadImage() {
-        imageService.getCompressedImageFilePath(image.id).then((url) => setImageUrl(url));
-        // TODO: figure out why tags are being sent as an array of one item??
+        imageService.getCompressedImageFilePath(image.id).then((url) => setImageUrl(url)).catch((error) => {
+            console.log(error);
+        });
         image.tags = image.tags[0].split(",");
     }
 
@@ -84,26 +120,33 @@ export const ImageWithComments: React.FC<{
         setShowComments((prevShowComments) => !prevShowComments);
     }
 
-    if (!imageUrl) {
-        return <div>Loading image...</div>
-    }
 
     return (
         <div className="image-with-comments">
             <p className="author">Author: {image.authorId}</p>
-            <img className="image" src={imageUrl} alt={`Image ${image.id}`}/>
+
+            {imageUrl &&
+                <img className="image" src={imageUrl} alt={`Image ${image.id}`}/>
+            }
+
+            {!imageUrl &&
+                <p className="author">Loading image...</p>
+            }
+
             <p className="title">{image.title}</p>
-            <div className="extracted-hashtags">
-                {image.tags.map((hashtag, index) => (
+
+            {image.tags.length > 2 &&
+                <div className="extracted-hashtags">
                     <ul>
-                        <li key={index}>{hashtag}</li>
+                        {image.tags.map((hashtag, index) => (
+                            <li key={index}>{hashtag}</li>
+                        ))}
                     </ul>
-                ))}
-            </div>
+                </div>
+            }
 
             {image.editorIds.includes(getUserId()) && (
                 <button className="delete-button" type="submit" onClick={handleOpenImageDeletionDialog}>
-                    {/*<button className="delete-button" type="submit" onClick={handleImageDelete}>*/}
                     <img src="/delete.svg" alt="Delete"/>
                 </button>
             )}
@@ -184,6 +227,15 @@ export const ImageWithComments: React.FC<{
                         handleCloseCommentDeletionDialog();
                     }}
                     onClose={handleCloseCommentDeletionDialog}
+                />
+            }
+
+            {
+                showErrorMessageDialog &&
+                <ErrorDialog
+                    message={errorMessage}
+                    isOpen={showErrorMessageDialog}
+                    onClose={handleCloseErrorMessageDialog}
                 />
             }
         </div>

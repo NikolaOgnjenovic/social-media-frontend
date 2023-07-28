@@ -1,12 +1,13 @@
-import {useEffect, useState} from "react";
-import * as imageService from "../services/ImageService.ts";
-import * as folderService from "../services/FolderService.ts";
-import * as userService from "../services/UserService.ts";
-import {Folder, Image, User} from "../types/global";
-import {FolderFC} from "../components/Folder.tsx";
-import {getUserId} from "../services/AuthService.ts";
-import {useNavigate} from "react-router-dom";
-import "../css/folders.css";
+import {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {Folder, Image, User} from '../types/global';
+import {getUserId} from '../services/AuthService';
+import {createFolder, getFoldersByUserId} from '../services/FolderService';
+import {getImagesByUserId} from '../services/ImageService';
+import {getUsers} from '../services/UserService';
+import {FolderFC} from '../components/Folder';
+import '../css/folders.css';
+import ErrorDialog from "../components/ErrorDialog.tsx";
 
 function Folders() {
     const [folders, setFolders] = useState<Folder[]>([]);
@@ -15,6 +16,8 @@ function Folders() {
     const navigate = useNavigate();
     const [newFolderTitle, setNewFolderTitle] = useState<string>("");
     const [users, setUsers] = useState<User[]>([]);
+    const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     const DEFAULT_FOLDER: Folder = {
         id: -1,
@@ -35,15 +38,28 @@ function Folders() {
     }, [isLoggedIn]);
 
     async function loadData() {
-        setImages(await imageService.getImagesByUserId());
-        setFolders(await folderService.getFoldersByUserId());
-        setUsers(await userService.getUsers());
+        setImages(await getImagesByUserId());
+        setFolders(await getFoldersByUserId());
+        setUsers(await getUsers());
     }
 
     async function handleFolderCreate(authorId: number) {
         if (newFolderTitle.length > 0) {
-            setFolders(await folderService.createFolder(folders, authorId, newFolderTitle));
+            try {
+                setFolders(await createFolder(folders, authorId, newFolderTitle));
+            } catch {
+                setErrorMessage("Failed to create folder. Please check if you're connected to the internet and try again.");
+                handleOpenErrorMessageDialog();
+            }
         }
+    }
+
+    function handleOpenErrorMessageDialog() {
+        setShowErrorMessageDialog(true);
+    }
+
+    function handleCloseErrorMessageDialog() {
+        setShowErrorMessageDialog(false);
     }
 
     return (
@@ -84,6 +100,15 @@ function Folders() {
                     />
                 ))}
             </div>
+
+            {
+                showErrorMessageDialog &&
+                <ErrorDialog
+                    message={errorMessage}
+                    isOpen={showErrorMessageDialog}
+                    onClose={handleCloseErrorMessageDialog}
+                />
+            }
         </div>
     );
 }

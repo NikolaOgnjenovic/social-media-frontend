@@ -1,23 +1,27 @@
 import React, {useEffect, useState} from "react";
-import * as authService from "../services/AuthService.ts";
-import {getUserId} from "../services/AuthService.ts";
+import {Box, Button, Center, FormControl, FormLabel, Heading, Input} from "@chakra-ui/react";
+import ErrorDialog from "../components/ErrorDialog";
 import {useNavigate} from "react-router-dom";
-import "../css/login.css";
-import ErrorDialog from "../components/ErrorDialog.tsx";
+import {getUserId, login} from "../services/AuthService";
 
-function Login() {
+interface LoginProps {
+    // Add prop definitions here if needed
+}
+
+const Login: React.FC<LoginProps> = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [isLoggedIn, setIsLoggedIn] = useState(getUserId() != -1);
-    const [showInvalidCredentialsError, setShowInvalidCredentialsError] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(getUserId() !== -1);
+    const [showInvalidCredentialsError, setShowInvalidCredentialsError] =
+        useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         if (isLoggedIn) {
-            navigate('/feed', {replace: true});
+            navigate("/feed", {replace: true});
             window.location.reload();
         }
-    }, [isLoggedIn])
+    }, [isLoggedIn]);
 
     function handleUsernameChange(event: React.ChangeEvent<HTMLInputElement>) {
         setUsername(event.target.value);
@@ -25,6 +29,20 @@ function Login() {
 
     function handlePasswordChange(event: React.ChangeEvent<HTMLInputElement>) {
         setPassword(event.target.value);
+    }
+
+    async function handleLogin() {
+        try {
+            const success = await login(username, password);
+            if (success) {
+                setIsLoggedIn(true);
+            } else {
+                handleOpenInvalidCredentialsError();
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            handleOpenInvalidCredentialsError();
+        }
     }
 
     function handleOpenInvalidCredentialsError() {
@@ -35,53 +53,48 @@ function Login() {
         setShowInvalidCredentialsError(false);
     }
 
-    async function handleLogin() {
-        await authService.login(username, password).then((success) => {
-            if (success) {
-                setIsLoggedIn(true);
-            } else {
-                handleOpenInvalidCredentialsError();
-            }
-        })
-    }
-
     return (
-        <div className={"login-body"}>
-            <div className={"login-container"}>
-                <p className={"text-3xl"}>Login</p>
-                <div id="login-form">
-                    <div>
-                        <label htmlFor="username">Username:</label>
-                        <input placeholder="Username"
-                               type="text"
-                               id="username"
-                               required
-                               onChange={handleUsernameChange}
+        <Center h="100vh">
+            <Box maxW="50%" w="100%" className={"login-body"} textAlign="center">
+                <Box className={"login-container"} p={6} boxShadow="lg" rounded="md">
+                    <Heading as="h1" size="xl">
+                        Login
+                    </Heading>
+                    <FormControl mt={4}>
+                        <FormLabel htmlFor="username">Username:</FormLabel>
+                        <Input
+                            placeholder="Username"
+                            type="text"
+                            id="username"
+                            required
+                            onChange={handleUsernameChange}
                         />
-                    </div>
-                    <div>
-                        <label htmlFor="password">Password:</label>
-                        <input placeholder="Password"
-                               type="password"
-                               id="password"
-                               required
-                               onChange={handlePasswordChange}
+                    </FormControl>
+                    <FormControl mt={4}>
+                        <FormLabel htmlFor="password">Password:</FormLabel>
+                        <Input
+                            placeholder="Password"
+                            type="password"
+                            id="password"
+                            required
+                            onChange={handlePasswordChange}
                         />
-                    </div>
-                    <button className="border" type="button" onClick={handleLogin}>Login</button>
-                </div>
-            </div>
+                    </FormControl>
+                    <Button mt={6} colorScheme="blue" onClick={handleLogin}>
+                        Login
+                    </Button>
+                </Box>
 
-            {
-                showInvalidCredentialsError &&
-                <ErrorDialog
-                    message="Invalid credentials"
-                    isOpen={showInvalidCredentialsError}
-                    onClose={handleCloseInvalidCredentialsError}
-                />
-            }
-        </div>
+                {showInvalidCredentialsError && (
+                    <ErrorDialog
+                        message="Invalid credentials"
+                        isOpen={showInvalidCredentialsError}
+                        onClose={handleCloseInvalidCredentialsError}
+                    />
+                )}
+            </Box>
+        </Center>
     );
-}
+};
 
 export default Login;

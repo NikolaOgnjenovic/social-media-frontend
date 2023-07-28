@@ -1,6 +1,6 @@
-import UserPopularityChart from "../components/UserPopularityChart.tsx";
+import UserPopularityChart from "../components/UserPopularityChart";
 import "../css/chart.css";
-import {getUserPopularity} from "../services/UserService.ts";
+import {getUserPopularity} from "../services/UserService";
 import {useEffect, useState} from "react";
 
 function PopularityChart() {

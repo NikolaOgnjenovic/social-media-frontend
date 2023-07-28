@@ -1,9 +1,10 @@
 import React, {useState} from "react";
 import {Folder, Image, User} from "../types/global";
-import * as folderService from "../services/FolderService.ts";
-import {FolderImage} from "./FolderImage.tsx";
-import {getUserId} from "../services/AuthService.ts";
-import GenericConfirmationDialog from "./GenericConfirmationDialog.tsx";
+import * as folderService from "../services/FolderService";
+import {FolderImage} from "./FolderImage";
+import {getUserId} from "../services/AuthService";
+import GenericConfirmationDialog from "./GenericConfirmationDialog";
+import ErrorDialog from "./ErrorDialog.tsx";
 
 export const FolderFC: React.FC<{
     folder: Folder,
@@ -21,9 +22,16 @@ export const FolderFC: React.FC<{
           setImages
       }) => {
     const [showFolderDeletionDialog, setShowFolderDeletionDialog] = useState(false);
+    const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     async function handleFolderDelete(folderId: number) {
-        setFolders(await folderService.deleteFolder(folders, folderId));
+        try {
+            setFolders(await folderService.deleteFolder(folders, folderId));
+        } catch {
+            setErrorMessage("Failed to delete folder. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        }
     }
 
     function handleOpenFolderDeletionDialog() {
@@ -34,6 +42,13 @@ export const FolderFC: React.FC<{
         setShowFolderDeletionDialog(false);
     }
 
+    function handleOpenErrorMessageDialog() {
+        setShowErrorMessageDialog(true);
+    }
+
+    function handleCloseErrorMessageDialog() {
+        setShowErrorMessageDialog(false);
+    }
 
     if (folder.id == -1) {
         return (
@@ -86,6 +101,15 @@ export const FolderFC: React.FC<{
                         handleCloseFolderDeletionDialog();
                     }}
                     onClose={handleCloseFolderDeletionDialog}
+                />
+            }
+
+            {
+                showErrorMessageDialog &&
+                <ErrorDialog
+                    message={errorMessage}
+                    isOpen={showErrorMessageDialog}
+                    onClose={handleCloseErrorMessageDialog}
                 />
             }
         </div>

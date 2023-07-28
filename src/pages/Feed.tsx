@@ -1,14 +1,18 @@
 import {ChangeEvent, useEffect, useState} from 'react';
-import * as imageService from "../services/ImageService.ts";
-import * as commentService from "../services/CommentService.ts";
-import {ImageWithComments} from "../components/ImageWithComments.tsx";
-import {Comment, Image} from "../types/global";
-import {getUserId} from "../services/AuthService.ts";
-import {useNavigate} from "react-router-dom";
-import "../css/interaction-section.css";
-import HashtagInput from "../components/HashtagInput.tsx";
-import ImageEditModal from "../components/ImageEditModal.tsx";
-import ErrorDialog from "../components/ErrorDialog.tsx";
+import {useNavigate} from 'react-router-dom';
+
+import {ImageWithComments} from '../components/ImageWithComments';
+import HashtagInput from '../components/HashtagInput';
+import ImageEditModal from '../components/ImageEditModal';
+import ErrorDialog from '../components/ErrorDialog';
+
+import {getUserId} from '../services/AuthService';
+import {Comment, Image} from '../types/global';
+import {createImage, getImagesWithPagination} from "../services/ImageService";
+import {getComments} from "../services/CommentService";
+
+import '../css/interaction-section.css';
+
 
 function Feed() {
     const [images, setImages] = useState<Image[]>([]);
@@ -21,6 +25,7 @@ function Feed() {
     const [hashtags, setHashtags] = useState<string[]>([]);
     const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
+
     const navigate = useNavigate();
     const selectedImageName = document.getElementById('selected-image-name');
 
@@ -46,8 +51,8 @@ function Feed() {
 
     // Fetch images, comments, and folders
     async function loadData() {
-        setImages(await imageService.getImagesWithPagination(1, 10));
-        setComments(await commentService.getComments());
+        setImages(await getImagesWithPagination(1, 10));
+        setComments(await getComments());
 
         if (selectedImageName != null) {
             selectedImageName.textContent = "No selected image";
@@ -110,7 +115,7 @@ function Feed() {
         }
 
         try {
-            const updatedImages = await imageService.createImage(images, authorId, tags, newImageTitle, imageFile);
+            const updatedImages = await createImage(images, authorId, tags, newImageTitle, imageFile);
             setImages(updatedImages);
         } catch {
             setErrorMessage("Failed to create image. Please check if you're connected to the internet and try again.");

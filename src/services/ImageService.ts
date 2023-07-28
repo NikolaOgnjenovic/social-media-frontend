@@ -7,7 +7,7 @@ export async function createImage(images: Image[], authorId: number, tags: strin
     const updatedImages = [...images];
     const formData = new FormData();
     formData.append("authorId", authorId.toString());
-    formData.append("tags", tags.toString());
+    formData.append("tags", JSON.stringify(tags));
     formData.append("title", title.toString());
     formData.append("image", imageFile);
 

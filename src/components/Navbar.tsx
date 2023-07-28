@@ -1,4 +1,4 @@
-import {getUserId, logout} from "../services/AuthService.ts";
+import {getUserId, logout} from "../services/AuthService";
 import React, {useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 
