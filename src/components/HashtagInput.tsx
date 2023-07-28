@@ -22,13 +22,13 @@ const HashtagInput: React.FC<{ hashtags: string[], setHashtags: (hashtags: strin
 
     return (
         <div className="hashtag-input-container">
-            <label htmlFor="hashtagInput">Enter Hashtags: </label>
+            <label htmlFor="hashtagInput">Hashtags: </label>
             <input
                 id="hashtagInput"
                 type="text"
                 value={inputValue}
                 onChange={handleInputChange}
-                placeholder="Type your hashtags here..."
+                placeholder="#input #your #hashtags"
                 className="hashtag-input"
             />
             <div className="extracted-hashtags">

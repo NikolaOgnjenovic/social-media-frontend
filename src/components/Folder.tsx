@@ -60,7 +60,6 @@ export const FolderFC: React.FC<{
                             key={image.id}
                             folders={folders}
                             image={image}
-                            images={images}
                             setImages={setImages}
                             users={users}
                         />
@@ -72,7 +71,7 @@ export const FolderFC: React.FC<{
 
     return (
         <div className="folder-card">
-            <p className="folder-title text-3xl">{folder.title}</p>
+            <p className="folder-title">{folder.title}</p>
             {folder.authorId === getUserId() && (
                 <button className="image-button" type="submit" onClick={handleOpenFolderDeletionDialog}>
                     <img src="/delete.svg" alt="Delete"/>
@@ -86,7 +85,6 @@ export const FolderFC: React.FC<{
                         key={image.id}
                         folders={folders}
                         image={image}
-                        images={images}
                         setImages={setImages}
                         users={users}
                     />

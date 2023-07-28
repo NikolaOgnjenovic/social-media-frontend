@@ -1,0 +1,57 @@
+#image-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border: 1px solid var(--secondary);
+    border-radius: 3px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#image-title-input {
+    flex: 1 1 25%; /* 25% width for the title input */
+}
+
+#image-upload-section {
+    flex: 1 1 25%;
+}
+
+#image-file-label {
+    background-color: var(--secondary);
+    color: #ffffff;
+    text-align: center;
+    padding: 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#image-file-label:hover {
+    background-color: var(--secondary-light);
+}
+
+#image-file-input {
+    display: none;
+}
+
+#selected-image-name {
+    margin-top: 1rem;
+}
+
+#hashtag-input {
+    flex: 1 1 45%;
+}
+
+#upload-button {
+    flex: 1 1 5%;
+}
+
+.centered-flex {
+    display: flex; /* Use Flexbox to center the image */
+    justify-content: center; /* Center the image horizontally */
+    align-items: center; /* Center the image vertically */
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+}

@@ -1,10 +1,10 @@
 import {Image} from "../types/global";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+let images: Image[] = [];
 
 // Sends a POST request to upload an image to the server
-export async function createImage(images: Image[], authorId: number, tags: string[], title: String, imageFile: File): Promise<Image[]> {
-    const updatedImages = [...images];
+export async function createImage(authorId: number, tags: string[], title: String, imageFile: File): Promise<Image[]> {
     const formData = new FormData();
     formData.append("authorId", authorId.toString());
     formData.append("tags", JSON.stringify(tags));
@@ -24,19 +24,24 @@ export async function createImage(images: Image[], authorId: number, tags: strin
     }
 
     const image = await response.json();
-    updatedImages.push(image);
-    return updatedImages;
+
+    return [...images, image];
 }
 
 // Sends a GET request which, if successful, populates the images array
 export async function getImages(): Promise<Image[]> {
+    if (images.length > 0) {
+        return images;
+    }
+
     const response = await fetch(BACKEND_URL + "/api/v1/images");
 
     if (!response.ok) {
         throw new Error("Failed to get images.");
     }
 
-    return await response.json();
+    images = await response.json();
+    return images;
 }
 
 export async function getImagesWithPagination(page: number, pageSize: number): Promise<Image[]> {
@@ -84,7 +89,11 @@ export async function getCompressedImageFilePath(id: number): Promise<string> {
 }
 
 // Sends a PATCH request which, if successful, updates the like count of the image with the given id
-export async function updateImageLikeCount(images: Image[], id: number, updatedLikeCount: number): Promise<Image[]> {
+export async function updateImageLikeCount(id: number, updatedLikeCount: number): Promise<Image[]> {
+    if (images.length === 0) {
+        images = await getImages();
+    }
+
     const updatedImages = [...images];
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/like-count", {
         headers: {
@@ -106,12 +115,17 @@ export async function updateImageLikeCount(images: Image[], id: number, updatedL
         }
     }
 
+    images = updatedImages;
     return updatedImages;
 }
 
 
 // Sends a PATCH request which, if successful, updates the folder id of the image with the given id
-export async function updateImageFolderId(images: Image[], id: number, updatedFolderId: number): Promise<Image[]> {
+export async function updateImageFolderId(id: number, updatedFolderId: number): Promise<Image[]> {
+    if (images.length === 0) {
+        images = await getImages();
+    }
+
     const updatedImages = [...images];
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/folder-id", {
         headers: {
@@ -133,11 +147,16 @@ export async function updateImageFolderId(images: Image[], id: number, updatedFo
         }
     }
 
+    images = updatedImages;
     return updatedImages;
 }
 
 
-export async function updateImageEditorIds(images: Image[], id: number, updatedEditorIds: number[]): Promise<Image[]> {
+export async function updateImageEditorIds(id: number, updatedEditorIds: number[]): Promise<Image[]> {
+    if (images.length === 0) {
+        images = await getImages();
+    }
+
     const updatedImages = [...images];
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/editor-ids", {
         headers: {
@@ -159,6 +178,7 @@ export async function updateImageEditorIds(images: Image[], id: number, updatedE
         }
     }
 
+    images = updatedImages;
     return updatedImages;
 }
 
@@ -179,7 +199,11 @@ export async function updateFile(id: number, imageFile: File): Promise<void> {
     }
 }
 
-export async function deleteImage(images: Image[], imageId: number): Promise<Image[]> {
+export async function deleteImage(imageId: number): Promise<Image[]> {
+    if (images.length === 0) {
+        images = await getImages();
+    }
+
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + imageId, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
@@ -192,5 +216,6 @@ export async function deleteImage(images: Image[], imageId: number): Promise<Ima
     }
 
     // Filter out the deleted image from the images array
-    return images.filter((image) => image.id !== imageId);
+    images = images.filter((image) => image.id !== imageId);
+    return images;
 }

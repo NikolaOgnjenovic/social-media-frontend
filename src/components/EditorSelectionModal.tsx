@@ -30,7 +30,7 @@ const EditorSelectionModal: React.FC<Props> = ({authorId, imageEditorIds, users,
             <ul>
                 {users.filter((user) => user.id != authorId).map((user) => (
                     <li
-                        className={selectedEditorIds.includes(user.id) ? 'bold' : ''}
+                        className={selectedEditorIds.includes(user.id) ? "selected-bold" : ""}
                         key={user.id}
                         onClick={() => handleUserSelect(user)}
                     >

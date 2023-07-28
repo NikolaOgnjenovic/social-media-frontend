@@ -63,18 +63,21 @@ function Folders() {
     }
 
     return (
-        <div className="folders-page">
-            <div className="interaction-section">
-                <button className="image-button" type="submit" onClick={() => handleFolderCreate(getUserId())}>
-                    <img src="/create_folder.svg" alt="Create folder"/>
-                </button>
-                <input
-                    type="text"
-                    id="folder-title-input"
-                    className="folder-title-input"
-                    placeholder="Folder title"
-                    onChange={(e) => setNewFolderTitle(e.target.value)}
-                />
+        <>
+            <p>Create a folder</p>
+            <div id="folder-input-container">
+                <div id="folder-input">
+                    <button className="image-button" type="submit" onClick={() => handleFolderCreate(getUserId())}>
+                        <img src="/create_folder.svg" alt="Create folder"/>
+                    </button>
+                    <input
+                        type="text"
+                        id="folder-title-input"
+                        className="folder-title-input"
+                        placeholder="Folder title"
+                        onChange={(e) => setNewFolderTitle(e.target.value)}
+                    />
+                </div>
             </div>
 
             <div className="flex-container">
@@ -109,7 +112,7 @@ function Folders() {
                     onClose={handleCloseErrorMessageDialog}
                 />
             }
-        </div>
+        </>
     );
 }
 

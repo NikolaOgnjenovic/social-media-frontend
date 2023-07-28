@@ -6,19 +6,18 @@ import {getUserId} from "../services/AuthService";
 import "../css/image-with-comments.css";
 import GenericConfirmationDialog from "./GenericConfirmationDialog";
 import ErrorDialog from "./ErrorDialog.tsx";
+import {getUsernameById} from "../services/UserService.ts";
 
 export const ImageWithComments: React.FC<{
     image: Image,
-    images: Image[],
     comments: Comment[],
     setImages: React.Dispatch<any>,
-    setComments: React.Dispatch<any>
+    setComments: React.Dispatch<any>,
 }> = ({
           image,
-          images,
           comments,
           setImages,
-          setComments
+          setComments,
       }) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [showComments, setShowComments] = useState(false);
@@ -28,11 +27,18 @@ export const ImageWithComments: React.FC<{
     const [commentDeletionId, setCommentDeletionId] = useState(-1);
     const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [authorUsername, setAuthorUsername] = useState("");
     const userId = getUserId();
+
+    useEffect(() => {
+        getUsernameById(image.authorId).then((username) => {
+            setAuthorUsername(username);
+        });
+    }, [image.authorId]);
 
     async function handleCommentCreate(newCommentContent: string) {
         try {
-            setComments(await commentService.createComment(comments, userId, image.id, newCommentContent));
+            setComments(await commentService.createComment(userId, image.id, newCommentContent));
         } catch {
             setErrorMessage("Failed to create comment. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
@@ -41,7 +47,7 @@ export const ImageWithComments: React.FC<{
 
     async function handleImageLike(updatedLikeCount: number) {
         try {
-            setImages(await imageService.updateImageLikeCount(images, image.id, updatedLikeCount));
+            setImages(await imageService.updateImageLikeCount(image.id, updatedLikeCount));
         } catch {
             setErrorMessage("Failed to like image. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
@@ -58,7 +64,7 @@ export const ImageWithComments: React.FC<{
 
     async function handleImageDelete() {
         try {
-            setImages(await imageService.deleteImage(images, image.id));
+            setImages(await imageService.deleteImage(image.id));
         } catch {
             setErrorMessage("Failed to delete image. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
@@ -71,7 +77,7 @@ export const ImageWithComments: React.FC<{
 
     async function handleCommentLike(commentId: number, updatedLikeCount: number) {
         try {
-            const updatedComments = await commentService.updateCommentLikeCount(comments, commentId, updatedLikeCount);
+            const updatedComments = await commentService.updateCommentLikeCount(commentId, updatedLikeCount);
             setComments(updatedComments);
         } catch {
             setErrorMessage("Failed to like comment. Please check if you're connected to the internet and try again.");
@@ -90,7 +96,7 @@ export const ImageWithComments: React.FC<{
 
     async function handleCommentDelete(commentId: number) {
         try {
-            setComments(await commentService.deleteComment(comments, commentId));
+            setComments(await commentService.deleteComment(commentId));
         } catch {
             setErrorMessage("Failed to delete comment. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
@@ -120,10 +126,9 @@ export const ImageWithComments: React.FC<{
         setShowComments((prevShowComments) => !prevShowComments);
     }
 
-
     return (
         <div className="image-with-comments">
-            <p className="author">Author: {image.authorId}</p>
+            <p className="author">Author: {authorUsername}</p>
 
             {imageUrl &&
                 <img className="image" src={imageUrl} alt={`Image ${image.id}`}/>
@@ -159,9 +164,6 @@ export const ImageWithComments: React.FC<{
             </div>
 
             <div className="interaction-section">
-                <button className="comment-button" type="submit" onClick={() => handleCommentCreate(newCommentContent)}>
-                    <img src="/comment.svg" alt="Comment"/>
-                </button>
                 <span>
                     <input
                         type="text"
@@ -170,11 +172,17 @@ export const ImageWithComments: React.FC<{
                         value={newCommentContent}
                         onChange={(e) => handleCommentContentUpdate(e)}/>
                 </span>
+                <button className="comment-button" type="submit" onClick={() => handleCommentCreate(newCommentContent)}>
+                    <img src="/comment.svg" alt="Comment"/>
+                </button>
             </div>
 
-            <button className="toggle-comments-button" onClick={toggleCommentVisibility}>
-                {showComments ? 'Hide Comments' : 'Show Comments'}
-            </button>
+            {
+                comments.filter(comment => comment.imageId == image.id).length > 0 &&
+                <button className="toggle-comments-button" onClick={toggleCommentVisibility}>
+                    {showComments ? 'Hide Comments' : 'Show Comments'}
+                </button>
+            }
 
             {
                 showComments &&
@@ -182,7 +190,7 @@ export const ImageWithComments: React.FC<{
                     {comments
                         .filter((comment) => comment.imageId === image.id)
                         .map((comment) => (
-                            <div className="comment-item" key={comment.id}>
+                            <div className="comment-item centered-flex" key={comment.id}>
                                 <span className="author-name">{comment.authorId}</span>
                                 <p className="comment-text">{comment.content}</p>
 
@@ -217,6 +225,7 @@ export const ImageWithComments: React.FC<{
                     onClose={handleCloseImageDeletionDialog}
                 />
             }
+
             {
                 showCommentDeletionDialog &&
                 <GenericConfirmationDialog

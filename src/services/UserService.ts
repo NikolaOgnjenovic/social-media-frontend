@@ -2,9 +2,29 @@ import {Image, User} from "../types/global";
 import {getImages} from "./ImageService";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+let users: User[] = [];
+
+// Sends a GET request which, if successful, populates the users array
+export async function getUsers(): Promise<User[]> {
+    if (users.length > 0) {
+        return users;
+    }
+
+    const response = await fetch(BACKEND_URL + "/api/v1/users");
+
+    if (!response.ok) {
+        throw new Error("Failed to get users.");
+    }
+
+    users = await response.json();
+    return users;
+}
 
 export async function getUserPopularity() {
-    const users = await getUsers();
+    if (users.length === 0) {
+        users = await getUsers();
+    }
+
     const images = await getImages();
     let userPopularity: { username: string, popularity: number }[] = [];
     users.forEach((user: User) => {
@@ -25,13 +45,15 @@ function getPopularity(images: Image[], userId: number) {
     return popularity;
 }
 
-// Sends a GET request which, if successful, populates the users array
-export async function getUsers(): Promise<User[]> {
-    const response = await fetch(BACKEND_URL + "/api/v1/users");
-
-    if (!response.ok) {
-        throw new Error("Failed to get users.");
+export async function getUsernameById(userId: number) {
+    if (users.length === 0) {
+        users = await getUsers();
     }
 
-    return response.json();
+    const user: User | undefined = users.find((user) => user.id == userId);
+    if (user !== undefined) {
+        return user.username;
+    }
+
+    return "";
 }

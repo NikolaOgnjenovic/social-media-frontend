@@ -11,20 +11,18 @@ import ErrorDialog from "./ErrorDialog.tsx";
 
 export const FolderImage: React.FC<{
     image: Image,
-    images: Image[],
     setImages: React.Dispatch<any>,
     folders: Folder[],
     users: User[]
 }> = ({
           image,
-          images,
           setImages,
           folders,
           users
       }) => {
     const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
-    const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
+    const [isEditorsModalOpen, setIsEditorsModalOpen] = useState(false);
     const [isImageEditorModalOpen, setIsImageEditorModalOpen] = useState(false);
     const [showImageDeletionDialog, setShowImageDeletionDialog] = useState(false);
     const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
@@ -52,7 +50,7 @@ export const FolderImage: React.FC<{
 
     async function handleImageDelete() {
         try {
-            setImages(await imageService.deleteImage(images, image.id));
+            setImages(await imageService.deleteImage(image.id));
         } catch {
             setErrorMessage("Failed to delete image. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
@@ -69,7 +67,7 @@ export const FolderImage: React.FC<{
 
     async function handleFolderSelect(folderId: number) {
         try {
-            setImages(await imageService.updateImageFolderId(images, image.id, folderId));
+            setImages(await imageService.updateImageFolderId(image.id, folderId));
         } catch {
             setErrorMessage("Failed to update image folder. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
@@ -78,25 +76,30 @@ export const FolderImage: React.FC<{
         }
     }
 
-    function handleOpenEditorModal() {
-        setIsEditorModalOpen(true);
+    function handleOpenEditorsModal() {
+        setIsEditorsModalOpen(true);
     }
 
-    function handleCloseEditorModal() {
-        setIsEditorModalOpen(false);
+    function handleCloseEditorsModal() {
+        setIsEditorsModalOpen(false);
     }
 
     async function handleEditorsUpdate(editorIds: number[]) {
         try {
-            setImages(await imageService.updateImageEditorIds(images, image.id, editorIds));
+            setImages(await imageService.updateImageEditorIds(image.id, editorIds));
         } catch {
             setErrorMessage("Failed to update image editors. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
         }
     }
 
-    function handleOpenImageEditorsModal() {
-        setIsImageEditorModalOpen(true);
+    function handleOpenImageEditorModal() {
+        if (imageUrl === undefined) {
+            setErrorMessage("Failed to open image editing dialog because the image is missing. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
+        } else {
+            setIsImageEditorModalOpen(true);
+        }
     }
 
     function updateImage(imageFile: File) {
@@ -132,7 +135,7 @@ export const FolderImage: React.FC<{
 
                 {image.editorIds.includes(getUserId()) && (
                     <>
-                        <button className="image-button" type="submit" onClick={() => handleOpenEditorModal()}>
+                        <button className="image-button" type="submit" onClick={() => handleOpenEditorsModal()}>
                             <img src="/editors.svg" alt="Update editors"/>
                         </button>
 
@@ -140,7 +143,7 @@ export const FolderImage: React.FC<{
                             <img src="/delete.svg" alt="Delete"/>
                         </button>
 
-                        <button className="image-button" type="submit" onClick={() => handleOpenImageEditorsModal()}>
+                        <button className="image-button" type="submit" onClick={() => handleOpenImageEditorModal()}>
                             <img src="/editors.svg" alt="Edit image"/>
                         </button>
                     </>
@@ -155,13 +158,13 @@ export const FolderImage: React.FC<{
                     />
                 )}
 
-                {isEditorModalOpen && (
+                {isEditorsModalOpen && (
                     <EditorSelectionModal
                         authorId={image.authorId}
                         imageEditorIds={image.editorIds}
                         users={users}
                         onSelectEditorIds={handleEditorsUpdate}
-                        onCloseModal={handleCloseEditorModal}
+                        onCloseModal={handleCloseEditorsModal}
                     />
                 )}
 

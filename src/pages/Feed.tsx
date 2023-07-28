@@ -3,15 +3,15 @@ import {useNavigate} from 'react-router-dom';
 
 import {ImageWithComments} from '../components/ImageWithComments';
 import HashtagInput from '../components/HashtagInput';
-import ImageEditModal from '../components/ImageEditModal';
 import ErrorDialog from '../components/ErrorDialog';
 
 import {getUserId} from '../services/AuthService';
 import {Comment, Image} from '../types/global';
-import {createImage, getImagesWithPagination} from "../services/ImageService";
+import {createImage, getImages} from "../services/ImageService";
 import {getComments} from "../services/CommentService";
 
-import '../css/interaction-section.css';
+import '../css/feed.css';
+import ImageEditModal from "../components/ImageEditModal.tsx";
 
 
 function Feed() {
@@ -50,7 +50,9 @@ function Feed() {
 
     // Fetch images, comments, and folders
     async function loadData() {
-        setImages(await getImagesWithPagination(1, 10));
+        setImages(await getImages());
+        // TODO: pagination / infinite scrolling
+        //setImages(await getImagesWithPagination(1, 10));
         setComments(await getComments());
 
         if (selectedImageName != null) {
@@ -114,7 +116,7 @@ function Feed() {
         }
 
         try {
-            const updatedImages = await createImage(images, authorId, tags, newImageTitle, imageFile);
+            const updatedImages = await createImage(authorId, tags, newImageTitle, imageFile);
             setImages(updatedImages);
         } catch {
             setErrorMessage("Failed to create image. Please check if you're connected to the internet and try again.");
@@ -140,49 +142,43 @@ function Feed() {
 
     return (
         <>
-            <div className="flex-container">
-                <div className="interaction-section">
-                    <button className="image-button" type="submit"
-                            onClick={() => handleOpenImageEditorsModal()}>
-                        <img src="/create_image.svg" alt="Create image"/>
-                    </button>
-
-                    <input type="text" id="image-title-input" className="image-title-input" placeholder="Image title"
-                           onChange={e => handleSetImageTitle(e)}/>
-
-                    <label htmlFor="image-file-input" className="image-upload-label">Select an image</label>
-                    <input type="file" id="image-file-input" className="image-file-input"
+            <p>Upload an image</p>
+            <div id="image-input">
+                <input type="text" placeholder="Image title" id="image-title-input"
+                       onChange={e => handleSetImageTitle(e)}/>
+                <div id="image-upload-section">
+                    <label htmlFor="image-file-input" id="image-file-label">Select an image</label>
+                    <input type="file" id="image-file-input"
                            onChange={e => handleSetImageFile(e)}/>
                     <div className="selected-image-name" id="selected-image-name"></div>
+                </div>
 
+                <div id="#hashtag-input">
                     <HashtagInput
                         hashtags={hashtags}
                         setHashtags={setHashtags}
                     />
                 </div>
 
-                {isImageEditorModalOpen && newImageFile && (
-                    <ImageEditModal
-                        imageSource={newImageFile}
-                        visible={isImageEditorModalOpen}
-                        setVisible={setIsImageEditorModalOpen}
-                        updateImage={updateImage}
-                    />
-                )}
+                <button className="image-button centered-flex" type="submit" id="upload-button"
+                        onClick={() => handleOpenImageEditorsModal()}>
+                    <img src="/create_image.svg" alt="Create image"/>
+                </button>
+            </div>
 
+            <div className="search-container">
                 <div className="interaction-section">
-                    <p>Search by title:</p>
+                    <p>Title:</p>
                     <input type="text" className="search-title-input" placeholder="Search images by title"
                            onChange={e => handleSetImageTitleSearchTerm(e)}/>
                 </div>
 
                 <div className="interaction-section">
-                    <p>Search by tag:</p>
+                    <p>Tags:</p>
                     <input type="text" className="search-tag-input" placeholder="Search images by specific tag"
                            onChange={e => handleSetImageTagSearchTerm(e)}/>
                 </div>
             </div>
-
 
             <div className="flex-container">
                 {
@@ -190,7 +186,6 @@ function Feed() {
                         <ImageWithComments
                             key={image.id}
                             image={image}
-                            images={images}
                             comments={comments}
                             setImages={setImages}
                             setComments={setComments}
@@ -207,6 +202,15 @@ function Feed() {
                     onClose={handleCloseErrorMessageDialog}
                 />
             }
+
+            {isImageEditorModalOpen && newImageFile && (
+                <ImageEditModal
+                    imageSource={newImageFile}
+                    visible={isImageEditorModalOpen}
+                    setVisible={setIsImageEditorModalOpen}
+                    updateImage={updateImage}
+                />
+            )}
         </>
     )
 }

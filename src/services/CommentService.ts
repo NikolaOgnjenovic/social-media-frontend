@@ -1,9 +1,9 @@
 import {Comment} from "../types/global";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+let comments: Comment[] = [];
 
-export async function createComment(comments: Comment[], authorId: number, imageId: number, content: string): Promise<Comment[]> {
-    const updatedComments: Comment[] = [...comments];
+export async function createComment(authorId: number, imageId: number, content: string): Promise<Comment[]> {
     const response = await fetch(BACKEND_URL + "/api/v1/comments", {
         headers: {'Content-Type': 'application/json'},
         method: "POST",
@@ -19,10 +19,10 @@ export async function createComment(comments: Comment[], authorId: number, image
     }
 
     const comment = await response.json();
-    updatedComments.push(comment);
-    return updatedComments;
-}
+    console.table(comment);
 
+    return [...comments, comment];
+}
 
 // Sends a GET request which, if successful, populates the comments array
 export async function getComments(): Promise<Comment[]> {
@@ -32,7 +32,8 @@ export async function getComments(): Promise<Comment[]> {
         throw new Error("Failed to get comments.");
     }
 
-    return response.json();
+    comments = await response.json();
+    return comments;
 }
 
 export async function getCommentsByUserId(): Promise<Comment[]> {
@@ -46,11 +47,15 @@ export async function getCommentsByUserId(): Promise<Comment[]> {
         throw new Error("Failed to get comments.");
     }
 
-    return response.json();
+    return await response.json();
 }
 
 // Sends a PATCH request which, if successful, updates the like count of the comment with the given id
-export async function updateCommentLikeCount(comments: Comment[], id: number, updatedLikeCount: number): Promise<Comment[]> {
+export async function updateCommentLikeCount(id: number, updatedLikeCount: number): Promise<Comment[]> {
+    if (comments.length === 0) {
+        return comments;
+    }
+
     const updatedComments: Comment[] = [...comments];
     const response = await fetch(BACKEND_URL + "/api/v1/comments/" + id + "/like-count", {
         headers: {'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem("jwtToken")}`},
@@ -69,10 +74,15 @@ export async function updateCommentLikeCount(comments: Comment[], id: number, up
         }
     }
 
-    return updatedComments;
+    comments = updatedComments;
+    return comments;
 }
 
-export async function deleteComment(comments: Comment[], commentId: number): Promise<Comment[]> {
+export async function deleteComment(commentId: number): Promise<Comment[]> {
+    if (comments.length === 0) {
+        return comments;
+    }
+
     const response = await fetch(BACKEND_URL + "/api/v1/comments/" + commentId, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`

@@ -1,10 +1,9 @@
 import {Folder} from "../types/global";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+let folders: Folder[] = [];
 
-export async function createFolder(folders: Folder[], authorId: number, folderTitle: string): Promise<Folder[]> {
-    const updatedFolders = [...folders];
-
+export async function createFolder(authorId: number, folderTitle: string): Promise<Folder[]> {
     const response = await fetch(BACKEND_URL + "/api/v1/folders", {
         headers: {'Content-Type': 'application/json'},
         method: "POST",
@@ -19,20 +18,24 @@ export async function createFolder(folders: Folder[], authorId: number, folderTi
     }
 
     const folder = await response.json();
-    updatedFolders.push(folder);
-    return updatedFolders;
+    return [...folders, folder];
 }
 
 
 // Sends a GET request which, if successful, populates the folders array
 export async function getFolders(): Promise<Folder[]> {
+    if (folders.length > 0) {
+        return folders;
+    }
+
     const response = await fetch(BACKEND_URL + "/api/v1/folders");
 
     if (!response.ok) {
         throw new Error("Failed to get folders.");
     }
 
-    return response.json();
+    folders = await response.json();
+    return folders;
 }
 
 

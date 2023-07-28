@@ -13,14 +13,16 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ChakraProvider>
         <BrowserRouter>
             <Navbar/>
-            <Routes>
-                <Route path="/" element={<Navigate to="/login"/>}/>
-                <Route path="/login" element={<Login/>}/>
-                <Route path="/register" element={<Register/>}/>
-                <Route path="/feed" element={<Feed/>}/>
-                <Route path="/folders" element={<Folders/>}/>
-                <Route path="/chart" element={<PopularityChart/>}/>
-            </Routes>
+            <div className={"main-container"}>
+                <Routes>
+                    <Route path="/" element={<Navigate to="/login"/>}/>
+                    <Route path="/login" element={<Login/>}/>
+                    <Route path="/register" element={<Register/>}/>
+                    <Route path="/feed" element={<Feed/>}/>
+                    <Route path="/folders" element={<Folders/>}/>
+                    <Route path="/chart" element={<PopularityChart/>}/>
+                </Routes>
+            </div>
             <footer>
                 <p>By <a href="https://github.com/NikolaOgnjenovic" target="_blank">Mrmi</a></p>
             </footer>
