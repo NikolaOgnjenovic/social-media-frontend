@@ -6,14 +6,17 @@ function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(getUserId() != -1);
     const navigate = useNavigate();
 
-    async function handleLogout() {
-        await logout().then((success) => {
-            if (success) {
-                setIsLoggedIn(false);
-                navigate('/', {replace: true});
-                window.location.reload();
-            }
-        });
+    function handleLogout() {
+        try {
+            logout();
+        } catch {
+            console.log("Failed to invalidate jwt token");
+        }
+
+        localStorage.setItem("userId", "-1");
+        localStorage.setItem("jwtToken", "-1");
+        setIsLoggedIn(false);
+        navigate('/', {replace: true});
     }
 
     return (
@@ -28,7 +31,7 @@ function Navbar() {
                             Folders
                         </NavLink>
                         <NavLink to="/chart" activeClass={"active-link"}>
-                            Chart
+                            User popularity chart
                         </NavLink>
                         <a onClick={handleLogout}>Logout</a>
                     </>
@@ -39,6 +42,9 @@ function Navbar() {
                         </NavLink>
                         <NavLink to="/register" activeClass="active-link">
                             Register
+                        </NavLink>
+                        <NavLink to="/chart" activeClass={"active-link"}>
+                            User popularity chart
                         </NavLink>
                     </>
                 )}

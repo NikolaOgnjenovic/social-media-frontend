@@ -17,7 +17,7 @@ export async function login(username: string, password: string): Promise<boolean
     return true;
 }
 
-export async function logout(): Promise<boolean> {
+export async function logout() {
     const response = await fetch(BACKEND_URL + "/api/v1/logout", {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(localStorage.getItem("jwtToken")),
@@ -27,10 +27,6 @@ export async function logout(): Promise<boolean> {
     if (!response.ok) {
         throw new Error("Failed to log out.");
     }
-
-    localStorage.setItem("userId", "-1");
-    localStorage.setItem("jwtToken", "-1");
-    return true;
 }
 
 // https://stackoverflow.com/questions/48983708/where-to-store-access-token-in-react-js

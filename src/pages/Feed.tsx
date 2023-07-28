@@ -45,7 +45,6 @@ function Feed() {
     useEffect(() => {
         if (!isLoggedIn) {
             navigate('/', {replace: true});
-            window.location.reload();
         }
     }, [isLoggedIn]);
 
