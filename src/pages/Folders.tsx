@@ -46,7 +46,7 @@ function Folders() {
     async function handleFolderCreate(authorId: number) {
         if (newFolderTitle.length > 0) {
             try {
-                setFolders(await createFolder(folders, authorId, newFolderTitle));
+                setFolders(await createFolder(authorId, newFolderTitle));
             } catch {
                 setErrorMessage("Failed to create folder. Please check if you're connected to the internet and try again.");
                 handleOpenErrorMessageDialog();
