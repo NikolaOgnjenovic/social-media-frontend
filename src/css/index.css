@@ -3,9 +3,9 @@
     font-family: Inter, sans-serif;
     font-weight: 400;
     text-align: center;
-    --primary: #F5EDCE;
+    --primary: #FFFFFF;
     --secondary: #9C8CDE;
-    --secondary-light: #684FA3;
+    --secondary-dark: #684FA3;
     color: var(--secondary);
 }
 
@@ -13,18 +13,11 @@
     width: 80%;
     margin: auto;
     padding: 2rem;
+    min-height: 100vh;
 }
 
 header {
     background: var(--secondary);
-}
-
-header > h1 {
-    font-family: Argentum B, sans-serif;
-    font-weight: 500;
-    color: var(--primary);
-    font-size: 2.5rem;
-    text-transform: uppercase;
 }
 
 .flex-container {
@@ -32,6 +25,13 @@ header > h1 {
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+}
+
+.flex-row-centered-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
 nav {
@@ -100,7 +100,6 @@ img {
     padding: 5px;
 }
 
-/* Add your CSS styles here */
 .image-button {
     display: inline-block;
     cursor: pointer;

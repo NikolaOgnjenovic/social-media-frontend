@@ -1,4 +1,7 @@
+import {LoginResponse} from "../types/global";
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+let userData: LoginResponse | null = null;
 
 export async function login(username: string, password: string): Promise<boolean> {
     const response = await fetch(BACKEND_URL + "/api/v1/login", {
@@ -11,16 +14,15 @@ export async function login(username: string, password: string): Promise<boolean
         return false;
     }
 
-    const data = await response.json();
-    localStorage.setItem("userId", data["userId"]);
-    localStorage.setItem("jwtToken", data["token"]);
+    const data: LoginResponse = await response.json();
+    localStorage.setItem("user", JSON.stringify(data));
     return true;
 }
 
 export async function logout() {
     const response = await fetch(BACKEND_URL + "/api/v1/logout", {
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(localStorage.getItem("jwtToken")),
+        body: JSON.stringify(getUserJwtToken()),
         method: "POST"
     });
 
@@ -29,9 +31,35 @@ export async function logout() {
     }
 }
 
-// https://stackoverflow.com/questions/48983708/where-to-store-access-token-in-react-js
+function getUserData(): LoginResponse | null {
+    if (userData !== null) {
+        return userData;
+    }
+
+    // Retrieve data from localStorage
+    const userDataJSON = localStorage.getItem("user");
+
+    // Parse user data
+    userData = userDataJSON ? JSON.parse(userDataJSON) : null;
+    return userData;
+}
+
 export function getUserId(): number {
-    return JSON.parse(localStorage.getItem("userId") || "-1") || -1;
+    const userData = getUserData();
+    if (userData) {
+        return userData.userId;
+    }
+
+    return -1;
+}
+
+export function getUserJwtToken(): string {
+    const userData = getUserData();
+    if (userData) {
+        return userData.token;
+    }
+
+    return "";
 }
 
 export async function register(username: string, password: string): Promise<void> {
@@ -45,7 +73,6 @@ export async function register(username: string, password: string): Promise<void
         throw new Error("Failed to register user.");
     }
 
-    const data = await response.json();
-    localStorage.setItem("userId", data["userId"]);
-    localStorage.setItem("jwtToken", data["token"]);
+    const data: LoginResponse = await response.json();
+    localStorage.setItem("user", JSON.stringify(data));
 }

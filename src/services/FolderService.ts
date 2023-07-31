@@ -1,4 +1,5 @@
 import {Folder} from "../types/global";
+import {getUserJwtToken} from "./AuthService.ts";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 let folders: Folder[] = [];
@@ -42,7 +43,7 @@ export async function getFolders(): Promise<Folder[]> {
 export async function getFoldersByUserId(): Promise<Folder[]> {
     const response = await fetch(BACKEND_URL + "/api/v1/folders/user", {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
     });
 
@@ -53,10 +54,10 @@ export async function getFoldersByUserId(): Promise<Folder[]> {
     return response.json();
 }
 
-export async function deleteFolder(folders: Folder[], id: number): Promise<Folder[]> {
-    const response = await fetch(BACKEND_URL + "/api/v1/folders/" + id, {
+export async function deleteFolder(folders: Folder[], folderId: number): Promise<Folder[]> {
+    const response = await fetch(BACKEND_URL + "/api/v1/folders/" + folderId, {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
         method: "DELETE"
     });
@@ -65,6 +66,6 @@ export async function deleteFolder(folders: Folder[], id: number): Promise<Folde
         throw new Error("Failed to delete folder.");
     }
 
-    const folderId: number = await response.json();
-    return folders.filter((folder) => folder.id !== folderId);
+    folders = folders.filter((folder) => folder.id !== folderId);
+    return folders;
 }

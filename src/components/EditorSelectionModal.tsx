@@ -11,16 +11,22 @@ interface Props {
 }
 
 const EditorSelectionModal: React.FC<Props> = ({authorId, imageEditorIds, users, onSelectEditorIds, onCloseModal}) => {
-    const [selectedEditorIds, setSelectedEditorIds] = useState<number[]>(imageEditorIds);
+    const [selectedEditorIds, setSelectedEditorIds] = useState<Set<number>>(new Set<number>(imageEditorIds));
 
     function handleUserSelect(user: User) {
-        const updatedEditorIds = [...selectedEditorIds];
-        updatedEditorIds.push(user.id);
-        setSelectedEditorIds(updatedEditorIds);
+        const updatedSelectedEditorIds = new Set<number>(selectedEditorIds);
+
+        if (updatedSelectedEditorIds.has(user.id)) {
+            updatedSelectedEditorIds.delete(user.id);
+        } else {
+            updatedSelectedEditorIds.add(user.id);
+        }
+
+        setSelectedEditorIds(updatedSelectedEditorIds);
     }
 
     function handleConfirmSelection() {
-        onSelectEditorIds(selectedEditorIds);
+        onSelectEditorIds(Array.from(selectedEditorIds));
         onCloseModal();
     }
 
@@ -30,7 +36,7 @@ const EditorSelectionModal: React.FC<Props> = ({authorId, imageEditorIds, users,
             <ul>
                 {users.filter((user) => user.id != authorId).map((user) => (
                     <li
-                        className={selectedEditorIds.includes(user.id) ? "selected-bold" : ""}
+                        className={selectedEditorIds.has(user.id) ? "selected-bold" : ""}
                         key={user.id}
                         onClick={() => handleUserSelect(user)}
                     >

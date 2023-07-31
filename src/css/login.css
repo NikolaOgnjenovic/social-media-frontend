@@ -38,7 +38,7 @@
 }
 
 .login-container button:hover {
-    background-color: var(--secondary-light);
+    background-color: var(--secondary-dark);
 }
 
 .login-container p {

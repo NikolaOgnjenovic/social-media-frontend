@@ -25,15 +25,15 @@ const GenericConfirmationDialog: React.FC<{
         >
             <AlertDialogOverlay>
                 <AlertDialogContent>
-                    <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                    <AlertDialogHeader color="var(--primary)" fontSize='lg' fontWeight='bold'>
                         {message}
                     </AlertDialogHeader>
 
-                    <AlertDialogBody>
+                    <AlertDialogBody backgroundColor="var(--secondary)" color="var(--primary)">
                         Are you sure? You can't undo this action afterwards.
                     </AlertDialogBody>
 
-                    <AlertDialogFooter>
+                    <AlertDialogFooter justifyContent="center">
                         <Button ref={cancelRef} onClick={onClose}>
                             Cancel
                         </Button>

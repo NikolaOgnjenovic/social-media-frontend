@@ -11,12 +11,11 @@ function Navbar() {
             logout();
         } catch {
             console.log("Failed to invalidate jwt token");
+        } finally {
+            localStorage.clear();
+            setIsLoggedIn(false);
+            navigate('/', {replace: true});
         }
-
-        localStorage.setItem("userId", "-1");
-        localStorage.setItem("jwtToken", "-1");
-        setIsLoggedIn(false);
-        navigate('/', {replace: true});
     }
 
     return (

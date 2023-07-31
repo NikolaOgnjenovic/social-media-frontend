@@ -3,54 +3,69 @@ import {useNavigate} from 'react-router-dom';
 import {Folder, Image, User} from '../types/global';
 import {getUserId} from '../services/AuthService';
 import {createFolder, getFoldersByUserId} from '../services/FolderService';
-import {getImagesByUserId} from '../services/ImageService';
+import {getEditableImagesByUserId} from '../services/ImageService';
 import {getUsers} from '../services/UserService';
 import {FolderFC} from '../components/Folder';
 import '../css/folders.css';
 import ErrorDialog from "../components/ErrorDialog.tsx";
 
 function Folders() {
-    const [folders, setFolders] = useState<Folder[]>([]);
-    const [images, setImages] = useState<Image[]>([]);
-    const [isLoggedIn] = useState(getUserId() != -1);
     const navigate = useNavigate();
-    const [newFolderTitle, setNewFolderTitle] = useState<string>("");
-    const [users, setUsers] = useState<User[]>([]);
-    const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string>("");
 
+    // Auth
+    const [isLoggedIn] = useState(getUserId() != -1);
+
+    // Users
+    const [users, setUsers] = useState<User[]>([]);
+
+    // Images
+    const [images, setImages] = useState<Image[]>([]);
+
+    // Folders
+    const [folders, setFolders] = useState<Folder[]>([]);
+    const [newFolderTitle, setNewFolderTitle] = useState<string>("");
     const DEFAULT_FOLDER: Folder = {
         id: -1,
         authorId: getUserId(),
         title: "All of your images"
     };
 
+    // Errors
+    const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
+
+    // If the user is not logged in, navigate to /login
+    useEffect(() => {
+        if (!isLoggedIn) {
+            navigate('/', {replace: true});
+        }
+    }, [isLoggedIn]);
+
     // Fetch data on component mount
     useEffect(() => {
         loadData();
     }, []);
 
-    useEffect(() => {
-        if (!isLoggedIn) {
-            navigate('/', {replace: true});
-            window.location.reload();
-        }
-    }, [isLoggedIn]);
-
     async function loadData() {
-        setImages(await getImagesByUserId());
+        setImages(await getEditableImagesByUserId(getUserId()));
         setFolders(await getFoldersByUserId());
         setUsers(await getUsers());
     }
 
+    // Creates a folder and sets the folders state variable
     async function handleFolderCreate(authorId: number) {
-        if (newFolderTitle.length > 0) {
-            try {
-                setFolders(await createFolder(authorId, newFolderTitle));
-            } catch {
-                setErrorMessage("Failed to create folder. Please check if you're connected to the internet and try again.");
-                handleOpenErrorMessageDialog();
-            }
+        // Title length validation
+        if (newFolderTitle.length === 0) {
+            setErrorMessage("Please input a title for your folder.");
+            handleOpenErrorMessageDialog();
+            return;
+        }
+
+        try {
+            setFolders(await createFolder(authorId, newFolderTitle));
+        } catch {
+            setErrorMessage("Failed to create folder. Please check if you're connected to the internet and try again.");
+            handleOpenErrorMessageDialog();
         }
     }
 
@@ -62,14 +77,17 @@ function Folders() {
         setShowErrorMessageDialog(false);
     }
 
+    // TODO: All components get re-rendered and the images[] in the folders.tsx updates BUT
+    //  the folder children do not re-render until refresh
+    console.log("Re-rendered, images : " + images);
+    console.table(images);
+
     return (
         <>
-            <p>Create a folder</p>
-            <div id="folder-input-container">
+            <div className={"flex-row-centered-container"}>
                 <div id="folder-input">
-                    <button className="image-button" type="submit" onClick={() => handleFolderCreate(getUserId())}>
-                        <img src="/create_folder.svg" alt="Create folder"/>
-                    </button>
+                    <p className={"title"}>Create a folder</p>
+
                     <input
                         type="text"
                         id="folder-title-input"
@@ -77,6 +95,10 @@ function Folders() {
                         placeholder="Folder title"
                         onChange={(e) => setNewFolderTitle(e.target.value)}
                     />
+
+                    <button className="image-button" type="submit" onClick={() => handleFolderCreate(getUserId())}>
+                        <img src="/create_folder.svg" alt="Create folder"/>
+                    </button>
                 </div>
             </div>
 
@@ -87,8 +109,8 @@ function Folders() {
                     folders={folders}
                     setFolders={setFolders}
                     images={images}
-                    setImages={setImages}
                     users={users}
+                    setImages={setImages}
                 />
 
                 {folders.map((folder) => (
@@ -98,8 +120,8 @@ function Folders() {
                         folders={folders}
                         setFolders={setFolders}
                         images={images}
-                        setImages={setImages}
                         users={users}
+                        setImages={setImages}
                     />
                 ))}
             </div>

@@ -25,4 +25,13 @@ export type Folder = {
 export type User = {
     id: number;
     username: string;
+    "likedImageIds": Set<number>;
+    "likedCommentIds": Set<number>;
+}
+
+export type LoginResponse = {
+    "userId": number;
+    "token": string;
+    "likedImageIds": number[];
+    "likedCommentIds": number[];
 }

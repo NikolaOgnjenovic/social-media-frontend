@@ -4,61 +4,78 @@ import {useNavigate} from 'react-router-dom';
 import {ImageWithComments} from '../components/ImageWithComments';
 import HashtagInput from '../components/HashtagInput';
 import ErrorDialog from '../components/ErrorDialog';
+import ImageEditModal from '../components/ImageEditModal.tsx';
 
 import {getUserId} from '../services/AuthService';
 import {Comment, Image} from '../types/global';
-import {createImage, getImages} from "../services/ImageService";
-import {getComments} from "../services/CommentService";
+import {createImage, getImages} from '../services/ImageService';
+import {getComments} from '../services/CommentService';
 
 import '../css/feed.css';
-import ImageEditModal from "../components/ImageEditModal.tsx";
-
 
 function Feed() {
+    const navigate = useNavigate();
+    const selectedImageNameElement = document.getElementById('selected-image-name');
+
+    // Auth
+    const [isLoggedIn] = useState(getUserId() != -1);
+    
+    // Images
     const [images, setImages] = useState<Image[]>([]);
     const [searchedImages, setSearchedImages] = useState<Image[]>(images);
-    const [comments, setComments] = useState<Comment[]>([]);
-    const [isLoggedIn] = useState(getUserId() != -1);
     const [isImageEditorModalOpen, setIsImageEditorModalOpen] = useState(false);
     const [newImageFile, setNewImageFile] = useState<File | null>(null);
     const [newImageTitle, setNewImageTitle] = useState<string>("");
     const [hashtags, setHashtags] = useState<string[]>([]);
+
+    // Comments
+    const [comments, setComments] = useState<Comment[]>([]);
+
+    // Errors
     const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
-
-    const navigate = useNavigate();
-    const selectedImageName = document.getElementById('selected-image-name');
 
     let imageTitleSearchTerm: string = "";
     let imageTagSearchTerm: string = "";
 
-    // Fetch data on component mount
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    // Use useEffect to update searchedImages when images change
-    useEffect(() => {
-        updateSearchedImages();
-    }, [images, imageTitleSearchTerm, imageTagSearchTerm]);
-
+    // If the user is not logged in, navigate to /login
     useEffect(() => {
         if (!isLoggedIn) {
             navigate('/', {replace: true});
         }
     }, [isLoggedIn]);
 
-    // Fetch images, comments, and folders
-    async function loadData() {
-        setImages(await getImages());
-        // TODO: pagination / infinite scrolling
-        //setImages(await getImagesWithPagination(1, 10));
-        setComments(await getComments());
+    // Fetch data on component mount
+    useEffect(() => {
+        loadData();
+    }, []);
 
-        if (selectedImageName != null) {
-            selectedImageName.textContent = "No selected image";
+    // Fetch images & comments
+    async function loadData() {
+        try {
+            setImages(await getImages());
+        } catch {
+            console.log("Failed to load images");
+        }
+
+        try {
+            setComments(await getComments());
+        } catch {
+            console.log("Failed to load comments");
         }
     }
+
+    // Update selected image name text on selectedImageNameElement change
+    useEffect(() => {
+        if (selectedImageNameElement !== null) {
+            selectedImageNameElement.textContent = "No image selected";
+        }
+    }, [selectedImageNameElement]);
+
+    // Update searched images that are displayed when the images change or when searching by title / tags
+    useEffect(() => {
+        searchImages();
+    }, [images, imageTitleSearchTerm, imageTagSearchTerm]);
 
     function handleSetImageTitle(event: ChangeEvent<HTMLInputElement>) {
         setNewImageTitle(event.target.value);
@@ -69,21 +86,24 @@ function Feed() {
         if (files != null && files.length > 0) {
             setNewImageFile(files[0]);
 
-            if (selectedImageName != null) {
-                selectedImageName.textContent = "Selected image: " + newImageFile?.name;
+            if (selectedImageNameElement != null) {
+                selectedImageNameElement.textContent = "Selected image: " + newImageFile?.name;
             }
         }
     }
 
-    function updateSearchedImages() {
+    // Filters the searched images by title & tags using imageTitleSearchTerm & imageTagSearchTerm
+    function searchImages() {
         let searchedImages = [...images];
 
+        // Filter by title
         if (imageTitleSearchTerm.length > 0) {
             searchedImages = searchedImages.filter((image) => {
                 return image.title.toLowerCase().includes(imageTitleSearchTerm.toLowerCase());
             });
         }
 
+        // Filter by tags
         if (imageTagSearchTerm.length > 0) {
             searchedImages = searchedImages.filter((image) => {
                 let containsTag = false;
@@ -102,33 +122,51 @@ function Feed() {
 
     function handleSetImageTitleSearchTerm(event: ChangeEvent<HTMLInputElement>) {
         imageTitleSearchTerm = event.target.value;
-        updateSearchedImages();
+        searchImages();
     }
 
     function handleSetImageTagSearchTerm(event: ChangeEvent<HTMLInputElement>) {
         imageTagSearchTerm = event.target.value;
-        updateSearchedImages();
+        searchImages();
     }
 
-    async function handleImageCreate(authorId: number, tags: string[], imageFile: File | null) {
-        if (newImageTitle.length < 1 || imageFile == null) {
-            return;
-        }
-
+    // Creates an image using the image service and updates the images state.
+    async function handleImageCreate(authorId: number, tags: string[], imageFile: File) {
         try {
-            const updatedImages = await createImage(authorId, tags, newImageTitle, imageFile);
-            setImages(updatedImages);
+            const createdImage = await createImage(authorId, tags, newImageTitle, imageFile);
+            setImages(prevImages => [...prevImages, createdImage]); // Update state with the new image
         } catch {
             setErrorMessage("Failed to create image. Please check if you're connected to the internet and try again.");
             handleOpenErrorMessageDialog();
         }
     }
 
-    function handleOpenImageEditorsModal() {
+    // Opens the image editing modal if the image title, file and tags are valid
+    function handleOpenImageEditingModal() {
+        if (newImageTitle.length < 1) {
+            setErrorMessage("Please input a title for your image");
+            handleOpenErrorMessageDialog();
+            return;
+        }
+
+        if (newImageFile == null) {
+            setErrorMessage("Please upload your image.");
+            handleOpenErrorMessageDialog();
+            return;
+        }
+
+        if (hashtags.length === 0) {
+            setErrorMessage("Please input some hashtags for your image.");
+            handleOpenErrorMessageDialog();
+            return;
+        }
+
         setIsImageEditorModalOpen(true);
     }
 
-    function updateImage(imageFile: File) {
+    // Since the image editor needs a function which takes only a file parameter (because it is used for updating too),
+    // this function exists purely as a wrapper around handleImageCreate()
+    function createImageWithFile(imageFile: File) {
         handleImageCreate(getUserId(), hashtags, imageFile);
     }
 
@@ -142,10 +180,11 @@ function Feed() {
 
     return (
         <>
-            <p>Upload an image</p>
+            <p className={"title"}>Upload an image</p>
             <div id="image-input">
                 <input type="text" placeholder="Image title" id="image-title-input"
                        onChange={e => handleSetImageTitle(e)}/>
+
                 <div id="image-upload-section">
                     <label htmlFor="image-file-input" id="image-file-label">Select an image</label>
                     <input type="file" id="image-file-input"
@@ -161,10 +200,11 @@ function Feed() {
                 </div>
 
                 <button className="image-button centered-flex" type="submit" id="upload-button"
-                        onClick={() => handleOpenImageEditorsModal()}>
+                        onClick={() => handleOpenImageEditingModal()}>
                     <img src="/create_image.svg" alt="Create image"/>
                 </button>
             </div>
+
 
             <div className="search-container">
                 <div className="interaction-section">
@@ -208,7 +248,7 @@ function Feed() {
                     imageSource={newImageFile}
                     visible={isImageEditorModalOpen}
                     setVisible={setIsImageEditorModalOpen}
-                    updateImage={updateImage}
+                    updateImage={createImageWithFile}
                 />
             )}
         </>

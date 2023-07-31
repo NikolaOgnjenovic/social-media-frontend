@@ -9,7 +9,7 @@
 }
 
 #image-title-input {
-    flex: 1 1 25%; /* 25% width for the title input */
+    flex: 1 1 25%;
 }
 
 #image-upload-section {
@@ -26,7 +26,7 @@
 }
 
 #image-file-label:hover {
-    background-color: var(--secondary-light);
+    background-color: var(--secondary-dark);
 }
 
 #image-file-input {
@@ -46,7 +46,7 @@
 }
 
 .centered-flex {
-    display: flex; /* Use Flexbox to center the image */
+    display: flex;
     justify-content: center; /* Center the image horizontally */
     align-items: center; /* Center the image vertically */
 }

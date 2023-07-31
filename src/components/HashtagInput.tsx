@@ -5,14 +5,17 @@ const HashtagInput: React.FC<{ hashtags: string[], setHashtags: (hashtags: strin
                                                                                                        hashtags,
                                                                                                        setHashtags
                                                                                                    }) => {
-    const [inputValue, setInputValue] = useState<string>('');
+    const [inputValue, setInputValue] = useState<string>("");
+    const regex = /(?:^|\s)(?:#)([a-zA-Z\d]+)/gm; // Regular expression to match hashtags
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setInputValue(value);
-        const regex = /(?:^|\s)(?:#)([a-zA-Z\d]+)/gm; // Regular expression to match hashtags
-        const matchedHashtags = value.match(regex);
+        const inputValue = event.target.value;
+        setInputValue(inputValue);
+
+        const matchedHashtags = inputValue.match(regex);
+
         if (matchedHashtags) {
+            // Set the hashtags state variable to the unique hashtags in the matched hashtags array
             const uniqueHashtags = Array.from(new Set(matchedHashtags.map((tag) => tag.trim())));
             setHashtags(uniqueHashtags);
         } else {
@@ -22,7 +25,7 @@ const HashtagInput: React.FC<{ hashtags: string[], setHashtags: (hashtags: strin
 
     return (
         <div className="hashtag-input-container">
-            <label htmlFor="hashtagInput">Hashtags: </label>
+            <label htmlFor="hashtagInput">Hashtags:</label>
             <input
                 id="hashtagInput"
                 type="text"
@@ -31,6 +34,7 @@ const HashtagInput: React.FC<{ hashtags: string[], setHashtags: (hashtags: strin
                 placeholder="#input #your #hashtags"
                 className="hashtag-input"
             />
+
             <div className="extracted-hashtags">
                 <ul>
                     {hashtags.map((hashtag, index) => (
@@ -38,6 +42,7 @@ const HashtagInput: React.FC<{ hashtags: string[], setHashtags: (hashtags: strin
                     ))}
                 </ul>
             </div>
+
         </div>
     );
 };

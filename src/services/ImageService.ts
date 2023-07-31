@@ -1,10 +1,11 @@
 import {Image} from "../types/global";
+import {getUserJwtToken} from "./AuthService.ts";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 let images: Image[] = [];
 
 // Sends a POST request to upload an image to the server
-export async function createImage(authorId: number, tags: string[], title: String, imageFile: File): Promise<Image[]> {
+export async function createImage(authorId: number, tags: string[], title: String, imageFile: File): Promise<Image> {
     const formData = new FormData();
     formData.append("authorId", authorId.toString());
     formData.append("tags", JSON.stringify(tags));
@@ -13,7 +14,7 @@ export async function createImage(authorId: number, tags: string[], title: Strin
 
     const response = await fetch(BACKEND_URL + "/api/v1/images", {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
         method: "POST",
         body: formData
@@ -24,8 +25,8 @@ export async function createImage(authorId: number, tags: string[], title: Strin
     }
 
     const image = await response.json();
-
-    return [...images, image];
+    images = [...images, image]; // Update images in the service
+    return image;
 }
 
 // Sends a GET request which, if successful, populates the images array
@@ -44,6 +45,20 @@ export async function getImages(): Promise<Image[]> {
     return images;
 }
 
+export function getImageById(imageId: number): Image | null {
+    if (images.length === 0) {
+        return null;
+    }
+
+    for (let i = 0; i < images.length; i++) {
+        if (images[i].id === imageId) {
+            return images[i];
+        }
+    }
+
+    return null;
+}
+
 export async function getImagesWithPagination(page: number, pageSize: number): Promise<Image[]> {
     const response = await fetch(BACKEND_URL + "/api/v1/images/page/" + page + "/" + pageSize);
 
@@ -54,10 +69,22 @@ export async function getImagesWithPagination(page: number, pageSize: number): P
     return await response.json();
 }
 
+// Returns images which the user can edit
+export async function getEditableImagesByUserId(userId: number): Promise<Image[]> {
+    if (images.length === 0) {
+        images = await getImages();
+    }
+
+    return images.filter((image: Image) => {
+        return image.editorIds.includes(userId) || image.authorId === userId
+    });
+}
+
+
 export async function getImagesByUserId(): Promise<Image[]> {
     const response = await fetch(BACKEND_URL + "/api/v1/user-images", {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         }
     });
 
@@ -94,11 +121,10 @@ export async function updateImageLikeCount(id: number, updatedLikeCount: number)
         images = await getImages();
     }
 
-    const updatedImages = [...images];
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/like-count", {
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
         method: "PATCH",
         body: JSON.stringify(updatedLikeCount)
@@ -108,7 +134,9 @@ export async function updateImageLikeCount(id: number, updatedLikeCount: number)
         throw new Error("Failed to update image like count.");
     }
 
-    for (let i = 0; i < updatedImages.length; i++) {
+    const updatedImages = [...images];
+    const updatedImagesLength = updatedImages.length;
+    for (let i = 0; i < updatedImagesLength; i++) {
         if (updatedImages[i].id === id) {
             updatedImages[i].likeCount = updatedLikeCount;
             break;
@@ -119,18 +147,16 @@ export async function updateImageLikeCount(id: number, updatedLikeCount: number)
     return updatedImages;
 }
 
-
 // Sends a PATCH request which, if successful, updates the folder id of the image with the given id
 export async function updateImageFolderId(id: number, updatedFolderId: number): Promise<Image[]> {
     if (images.length === 0) {
         images = await getImages();
     }
 
-    const updatedImages = [...images];
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/folder-id", {
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
         method: "PATCH",
         body: JSON.stringify(updatedFolderId)
@@ -140,7 +166,9 @@ export async function updateImageFolderId(id: number, updatedFolderId: number): 
         throw new Error("Failed to update image folder id.");
     }
 
-    for (let i = 0; i < updatedImages.length; i++) {
+    const updatedImages = [...images];
+    const updatedImagesLength = updatedImages.length;
+    for (let i = 0; i < updatedImagesLength; i++) {
         if (updatedImages[i].id === id) {
             updatedImages[i].folderId = updatedFolderId;
             break;
@@ -155,13 +183,13 @@ export async function updateImageFolderId(id: number, updatedFolderId: number): 
 export async function updateImageEditorIds(id: number, updatedEditorIds: number[]): Promise<Image[]> {
     if (images.length === 0) {
         images = await getImages();
+        console.log("Empty images on update editor ids");
     }
 
-    const updatedImages = [...images];
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/editor-ids", {
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
         method: "PATCH",
         body: JSON.stringify(updatedEditorIds)
@@ -171,7 +199,9 @@ export async function updateImageEditorIds(id: number, updatedEditorIds: number[
         throw new Error("Failed to update image editor ids.");
     }
 
-    for (let i = 0; i < updatedImages.length; i++) {
+    const updatedImages = [...images];
+    const updatedImagesLength = updatedImages.length;
+    for (let i = 0; i < updatedImagesLength; i++) {
         if (updatedImages[i].id === id) {
             updatedImages[i].editorIds = updatedEditorIds;
             break;
@@ -188,7 +218,7 @@ export async function updateFile(id: number, imageFile: File): Promise<void> {
     formData.append("image", imageFile);
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/file", {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
         method: "PATCH",
         body: formData
@@ -199,14 +229,14 @@ export async function updateFile(id: number, imageFile: File): Promise<void> {
     }
 }
 
-export async function deleteImage(imageId: number): Promise<Image[]> {
+export async function deleteImage(imageId: number, imageUrl: string | undefined): Promise<Image[]> {
     if (images.length === 0) {
         images = await getImages();
     }
 
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + imageId, {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
+            Authorization: `Bearer ${getUserJwtToken()}`
         },
         method: "DELETE"
     });
@@ -217,5 +247,11 @@ export async function deleteImage(imageId: number): Promise<Image[]> {
 
     // Filter out the deleted image from the images array
     images = images.filter((image) => image.id !== imageId);
+
+    // Remove the blob identified with the old url
+    if (imageUrl != undefined) {
+        URL.revokeObjectURL(imageUrl);
+    }
+
     return images;
 }

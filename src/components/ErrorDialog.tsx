@@ -24,15 +24,15 @@ const ErrorDialog: React.FC<{
         >
             <AlertDialogOverlay>
                 <AlertDialogContent>
-                    <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                    <AlertDialogHeader color="var(--primary)" fontSize='lg' fontWeight='bold'>
                         ERROR
                     </AlertDialogHeader>
 
-                    <AlertDialogBody>
+                    <AlertDialogBody backgroundColor="var(--secondary)" color="var(--primary)">
                         {message}
                     </AlertDialogBody>
 
-                    <AlertDialogFooter>
+                    <AlertDialogFooter justifyContent="center">
                         <Button ref={cancelRef} onClick={onClose}>
                             OK
                         </Button>
