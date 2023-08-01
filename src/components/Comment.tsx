@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {getUserLikedCommentIds, updateUserLikedCommentIds,} from "../services/UserService.ts";
+import {getUserLikedCommentIds, getUsernameById, updateUserLikedCommentIds,} from "../services/UserService.ts";
 import {getUserId} from "../services/AuthService.ts";
 import {Comment} from "../types/global";
 import * as commentService from "../services/CommentService.ts";
@@ -17,6 +17,7 @@ export const CommentFC: React.FC<Props> = ({comment, setComments, userId}) => {
     const [commentIsLiked, setCommentIsLiked] = useState<boolean>(getUserLikedCommentIds().has(comment.id));
     const [showCommentDeletionDialog, setShowCommentDeletionDialog] = useState(false);
     const [commentDeletionId, setCommentDeletionId] = useState(-1);
+    const [commentAuthorUsername, setCommentAuthorUsername] = useState("");
 
     // Errors
     const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
@@ -25,6 +26,11 @@ export const CommentFC: React.FC<Props> = ({comment, setComments, userId}) => {
     useEffect(() => {
         // Set commentIsLiked
         setCommentIsLiked(getUserLikedCommentIds().has(comment.id));
+
+        // Set comment author username in order to display it
+        getUsernameById(comment.authorId).then((username) => {
+            setCommentAuthorUsername(username);
+        });
     })
 
     // Likes a comment and sets the comments state variable
@@ -79,7 +85,7 @@ export const CommentFC: React.FC<Props> = ({comment, setComments, userId}) => {
 
     return (
         <div className="comment-item centered-flex" key={comment.id}>
-            <span className="author-name">{comment.authorId}</span>
+            <span className="author-name">{commentAuthorUsername}</span>
             <p className="comment-text">{comment.content}</p>
 
             <div className="interaction-section">

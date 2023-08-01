@@ -19,7 +19,7 @@ function Feed() {
 
     // Auth
     const [isLoggedIn] = useState(getUserId() != -1);
-    
+
     // Images
     const [images, setImages] = useState<Image[]>([]);
     const [searchedImages, setSearchedImages] = useState<Image[]>(images);
@@ -133,6 +133,8 @@ function Feed() {
     // Creates an image using the image service and updates the images state.
     async function handleImageCreate(authorId: number, tags: string[], imageFile: File) {
         try {
+            console.log("Creating image");
+            console.table(tags);
             const createdImage = await createImage(authorId, tags, newImageTitle, imageFile);
             setImages(prevImages => [...prevImages, createdImage]); // Update state with the new image
         } catch {

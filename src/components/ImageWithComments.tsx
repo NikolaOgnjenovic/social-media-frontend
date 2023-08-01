@@ -48,9 +48,7 @@ export const ImageWithComments: React.FC<{
         imageService.getCompressedImageFilePath(image.id).then((url) => setImageUrl(url)).catch((error) => {
             console.log(error);
         });
-
-        // TODO: fix tags
-        image.tags = image.tags[0].split(",");
+        
     }, []);
 
     // Creates a comment and updates the comments state variable

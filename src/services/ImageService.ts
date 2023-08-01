@@ -144,6 +144,7 @@ export async function updateImageLikeCount(id: number, updatedLikeCount: number)
     }
 
     images = updatedImages;
+    console.table(images);
     return updatedImages;
 }
 
