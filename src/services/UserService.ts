@@ -1,6 +1,7 @@
-import {Image, LoginResponse, User} from "../types/global";
+import {Comment, Image, LoginResponse, User} from "../types/global";
 import {getImages} from "./ImageService";
 import {getUserJwtToken} from "./AuthService.ts";
+import {getComments} from "./CommentService.ts";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 let users: User[] = [];
@@ -28,21 +29,28 @@ export async function getUserPopularity() {
     }
 
     const images = await getImages();
+    const comments = await getComments();
     let userPopularity: { username: string, popularity: number }[] = [];
     users.forEach((user: User) => {
-        userPopularity.push({username: user.username, popularity: getPopularity(images, user.id)})
+        userPopularity.push({username: user.username, popularity: getPopularity(images, comments, user.id)})
     });
 
     return userPopularity;
 }
 
-function getPopularity(images: Image[], userId: number) {
+function getPopularity(images: Image[], comments: Comment[], userId: number) {
     let popularity = 0;
     images.forEach((image: Image) => {
-        if (image.authorId == userId) {
+        if (image.authorId === userId) {
             popularity += image.likeCount;
         }
-    })
+    });
+
+    comments.forEach((comment: Comment) => {
+        if (comment.authorId === userId) {
+            popularity += comment.likeCount;
+        }
+    });
 
     return popularity;
 }
@@ -106,9 +114,7 @@ export async function updateUserLikedImageIds(id: number, updatedLikedImageIds: 
     const updatedUsersLength = updatedUsers.length;
     for (let i = 0; i < updatedUsersLength; i++) {
         if (updatedUsers[i].id === id) {
-            console.log("UPDATING: ");
             updatedUsers[i].likedImageIds = updatedLikedImageIds;
-            console.table(updatedUsers);
             break;
         }
     }

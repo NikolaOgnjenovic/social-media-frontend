@@ -35,7 +35,6 @@ function getUserData(): LoginResponse | null {
     if (userData !== null) {
         return userData;
     }
-
     // Retrieve data from localStorage
     const userDataJSON = localStorage.getItem("user");
 

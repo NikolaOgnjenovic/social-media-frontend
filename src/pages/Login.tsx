@@ -3,6 +3,7 @@ import {Box, Button, Center, FormControl, FormLabel, Heading, Input} from "@chak
 import ErrorDialog from "../components/ErrorDialog";
 import {useNavigate} from "react-router-dom";
 import {getUserId, login} from "../services/AuthService";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 interface LoginProps {
     // Add prop definitions here if needed
@@ -58,12 +59,12 @@ const Login: React.FC<LoginProps> = () => {
             <Box maxW="50%" w="100%" className={"login-body"} textAlign="center">
                 <Box className={"login-container"} p={6} boxShadow="lg" rounded="md">
                     <Heading as="h1" size="xl">
-                        Login
+                        {localizedStrings.auth.login}
                     </Heading>
                     <FormControl mt={4}>
-                        <FormLabel htmlFor="username">Username:</FormLabel>
+                        <FormLabel htmlFor="username">{localizedStrings.auth.username}:</FormLabel>
                         <Input
-                            placeholder="Username"
+                            placeholder={localizedStrings.auth.username}
                             type="text"
                             id="username"
                             required
@@ -71,9 +72,9 @@ const Login: React.FC<LoginProps> = () => {
                         />
                     </FormControl>
                     <FormControl mt={4}>
-                        <FormLabel htmlFor="password">Password:</FormLabel>
+                        <FormLabel htmlFor="password">{localizedStrings.auth.password}:</FormLabel>
                         <Input
-                            placeholder="Password"
+                            placeholder={localizedStrings.auth.password}
                             type="password"
                             id="password"
                             required
@@ -81,13 +82,13 @@ const Login: React.FC<LoginProps> = () => {
                         />
                     </FormControl>
                     <Button mt={6} colorScheme="blue" onClick={handleLogin}>
-                        Login
+                        {localizedStrings.auth.login}
                     </Button>
                 </Box>
 
                 {showInvalidCredentialsError && (
                     <ErrorDialog
-                        message="Invalid credentials"
+                        message={localizedStrings.auth.errors.invalidCredentials}
                         isOpen={showInvalidCredentialsError}
                         onClose={handleCloseInvalidCredentialsError}
                     />

@@ -8,6 +8,7 @@ import {
     Button,
 } from '@chakra-ui/react';
 import React from "react";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 const GenericConfirmationDialog: React.FC<{
     message: string,
@@ -30,12 +31,12 @@ const GenericConfirmationDialog: React.FC<{
                     </AlertDialogHeader>
 
                     <AlertDialogBody backgroundColor="var(--secondary)" color="var(--primary)">
-                        Are you sure? You can't undo this action afterwards.
+                        {localizedStrings.confirmationText}
                     </AlertDialogBody>
 
                     <AlertDialogFooter justifyContent="center">
                         <Button ref={cancelRef} onClick={onClose}>
-                            Cancel
+                            {localizedStrings.cancel}
                         </Button>
                         <Button colorScheme='red' onClick={() => {
                             onConfirm();

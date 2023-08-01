@@ -1,21 +1,45 @@
 import {getUserId, logout} from "../services/AuthService";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
+import {getUsernameById} from "../services/UserService.ts";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 function Navbar() {
-    const [isLoggedIn, setIsLoggedIn] = useState(getUserId() != -1);
+    const userId = getUserId();
+    const [isLoggedIn, setIsLoggedIn] = useState(userId != -1);
     const navigate = useNavigate();
+    const [currentUsername, setCurrentUsername] = useState("");
+
+    useEffect(() => {
+        getUsernameById(userId).then((username) => {
+            setCurrentUsername(username);
+        });
+
+        // Load display language from localStorage
+        localizedStrings.setLanguage(localStorage.getItem("displayLanguage") || "en");
+    });
+
+    useEffect(() => {
+        // Load display language from localStorage
+        localizedStrings.setLanguage(localStorage.getItem("displayLanguage") || "en");
+    }, [isLoggedIn]);
 
     function handleLogout() {
         try {
             logout();
         } catch {
-            console.log("Failed to invalidate jwt token");
+            console.log(localizedStrings.auth.errors.jwt);
         } finally {
-            localStorage.clear();
+            localStorage.setItem("user", "");
             setIsLoggedIn(false);
             navigate('/', {replace: true});
         }
+    }
+
+    // Updates the display language in local storage and reloads the window
+    function setLanguage(languageCode: string) {
+        localStorage.setItem("displayLanguage", languageCode);
+        window.location.reload();
     }
 
     return (
@@ -24,26 +48,34 @@ function Navbar() {
                 {isLoggedIn ? (
                     <>
                         <NavLink to="/feed" activeClass="active-link">
-                            Feed
+                            {localizedStrings.navbar.feed}
                         </NavLink>
                         <NavLink to="/folders" activeClass="active-link">
-                            Folders
+                            {localizedStrings.navbar.folders}
                         </NavLink>
                         <NavLink to="/chart" activeClass={"active-link"}>
-                            User popularity chart
+                            {localizedStrings.navbar.chart}
                         </NavLink>
-                        <a onClick={handleLogout}>Logout</a>
+                        <a onClick={handleLogout}>{localizedStrings.navbar.logout}</a>
+                        <button className="image-button" type="submit" onClick={() => setLanguage("rsCyrillic")}>
+                            <img src="../../public/serbian.svg" alt={localizedStrings.serbian}/>
+                        </button>
+
+                        <button className="image-button" type="submit" onClick={() => setLanguage("en")}>
+                            <img src="../../public/english.svg" alt={localizedStrings.english}/>
+                        </button>
+                        <h1 className={"title"}>{localizedStrings.navbar.welcome} {currentUsername}</h1>
                     </>
                 ) : (
                     <>
+                        <NavLink to="/chart" activeClass={"active-link"}>
+                            {localizedStrings.navbar.chart}
+                        </NavLink>
                         <NavLink to="/login" activeClass="active-link">
-                            Login
+                            {localizedStrings.navbar.login}
                         </NavLink>
                         <NavLink to="/register" activeClass="active-link">
-                            Register
-                        </NavLink>
-                        <NavLink to="/chart" activeClass={"active-link"}>
-                            User popularity chart
+                            {localizedStrings.navbar.register}
                         </NavLink>
                     </>
                 )}

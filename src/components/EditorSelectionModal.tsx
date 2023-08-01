@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import "../css/folder-selection-modal.css";
 import {User} from "../types/global";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 interface Props {
     authorId: number,
@@ -32,7 +33,7 @@ const EditorSelectionModal: React.FC<Props> = ({authorId, imageEditorIds, users,
 
     return (
         <div className="folder-modal border">
-            <h2>Select users</h2>
+            <h2>{localizedStrings.images.updateEditors}</h2>
             <ul>
                 {users.filter((user) => user.id != authorId).map((user) => (
                     <li
@@ -46,9 +47,9 @@ const EditorSelectionModal: React.FC<Props> = ({authorId, imageEditorIds, users,
             </ul>
             <div className="modal-actions">
                 <button onClick={handleConfirmSelection} disabled={!selectedEditorIds}>
-                    Confirm
+                    {localizedStrings.confirm}
                 </button>
-                <button onClick={onCloseModal}>Cancel</button>
+                <button onClick={onCloseModal}>{localizedStrings.cancel}</button>
             </div>
         </div>
     );

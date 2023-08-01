@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import "../css/hashtag-input.css";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 const HashtagInput: React.FC<{ hashtags: string[], setHashtags: (hashtags: string[]) => void }> = ({
                                                                                                        hashtags,
@@ -25,13 +26,13 @@ const HashtagInput: React.FC<{ hashtags: string[], setHashtags: (hashtags: strin
 
     return (
         <div className="hashtag-input-container">
-            <label htmlFor="hashtagInput">Hashtags:</label>
+            <label htmlFor="hashtagInput">{localizedStrings.hashtags}</label>
             <input
                 id="hashtagInput"
                 type="text"
                 value={inputValue}
                 onChange={handleInputChange}
-                placeholder="#input #your #hashtags"
+                placeholder={localizedStrings.hashtagsPlaceholder}
                 className="hashtag-input"
             />
 

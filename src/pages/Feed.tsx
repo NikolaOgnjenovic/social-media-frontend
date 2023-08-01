@@ -12,6 +12,8 @@ import {createImage, getImages} from '../services/ImageService';
 import {getComments} from '../services/CommentService';
 
 import '../css/feed.css';
+import '../res/LocalizedStrings';
+import {localizedStrings} from "../res/LocalizedStrings";
 
 function Feed() {
     const navigate = useNavigate();
@@ -55,20 +57,20 @@ function Feed() {
         try {
             setImages(await getImages());
         } catch {
-            console.log("Failed to load images");
+            console.log(localizedStrings.images.errors.load);
         }
 
         try {
             setComments(await getComments());
         } catch {
-            console.log("Failed to load comments");
+            console.log(localizedStrings.comments.errors.load);
         }
     }
 
     // Update selected image name text on selectedImageNameElement change
     useEffect(() => {
         if (selectedImageNameElement !== null) {
-            selectedImageNameElement.textContent = "No image selected";
+            selectedImageNameElement.textContent = localizedStrings.images.noImageSelected;
         }
     }, [selectedImageNameElement]);
 
@@ -87,7 +89,7 @@ function Feed() {
             setNewImageFile(files[0]);
 
             if (selectedImageNameElement != null) {
-                selectedImageNameElement.textContent = "Selected image: " + newImageFile?.name;
+                selectedImageNameElement.textContent = localizedStrings.images.selectImage + newImageFile?.name;
             }
         }
     }
@@ -133,12 +135,10 @@ function Feed() {
     // Creates an image using the image service and updates the images state.
     async function handleImageCreate(authorId: number, tags: string[], imageFile: File) {
         try {
-            console.log("Creating image");
-            console.table(tags);
             const createdImage = await createImage(authorId, tags, newImageTitle, imageFile);
             setImages(prevImages => [...prevImages, createdImage]); // Update state with the new image
         } catch {
-            setErrorMessage("Failed to create image. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.create);
             handleOpenErrorMessageDialog();
         }
     }
@@ -146,19 +146,19 @@ function Feed() {
     // Opens the image editing modal if the image title, file and tags are valid
     function handleOpenImageEditingModal() {
         if (newImageTitle.length < 1) {
-            setErrorMessage("Please input a title for your image");
+            setErrorMessage(localizedStrings.images.errors.title);
             handleOpenErrorMessageDialog();
             return;
         }
 
         if (newImageFile == null) {
-            setErrorMessage("Please upload your image.");
+            setErrorMessage(localizedStrings.images.errors.file);
             handleOpenErrorMessageDialog();
             return;
         }
 
         if (hashtags.length === 0) {
-            setErrorMessage("Please input some hashtags for your image.");
+            setErrorMessage(localizedStrings.images.errors.hashtags);
             handleOpenErrorMessageDialog();
             return;
         }
@@ -182,13 +182,14 @@ function Feed() {
 
     return (
         <>
-            <p className={"title"}>Upload an image</p>
+            <p className={"title"}>{localizedStrings.images.uploadImageTitle}</p>
             <div id="image-input">
-                <input type="text" placeholder="Image title" id="image-title-input"
+                <input type="text" placeholder={localizedStrings.images.imageTitlePlaceHolder} id="image-title-input"
                        onChange={e => handleSetImageTitle(e)}/>
 
                 <div id="image-upload-section">
-                    <label htmlFor="image-file-input" id="image-file-label">Select an image</label>
+                    <label htmlFor="image-file-input"
+                           id="image-file-label">{localizedStrings.images.selectImage}</label>
                     <input type="file" id="image-file-input"
                            onChange={e => handleSetImageFile(e)}/>
                     <div className="selected-image-name" id="selected-image-name"></div>
@@ -203,7 +204,7 @@ function Feed() {
 
                 <button className="image-button centered-flex" type="submit" id="upload-button"
                         onClick={() => handleOpenImageEditingModal()}>
-                    <img src="/create_image.svg" alt="Create image"/>
+                    <img src="/create_image.svg" alt={localizedStrings.images.createImageAlt}/>
                 </button>
             </div>
 
@@ -211,13 +212,15 @@ function Feed() {
             <div className="search-container">
                 <div className="interaction-section">
                     <p>Title:</p>
-                    <input type="text" className="search-title-input" placeholder="Search images by title"
+                    <input type="text" className="search-title-input"
+                           placeholder={localizedStrings.images.searchByTitlePlaceholder}
                            onChange={e => handleSetImageTitleSearchTerm(e)}/>
                 </div>
 
                 <div className="interaction-section">
                     <p>Tags:</p>
-                    <input type="text" className="search-tag-input" placeholder="Search images by specific tag"
+                    <input type="text" className="search-tag-input"
+                           placeholder={localizedStrings.images.searchByTagsPlaceholder}
                            onChange={e => handleSetImageTagSearchTerm(e)}/>
                 </div>
             </div>

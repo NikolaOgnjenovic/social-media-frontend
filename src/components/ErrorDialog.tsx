@@ -8,6 +8,7 @@ import {
     Button,
 } from '@chakra-ui/react';
 import React from "react";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 const ErrorDialog: React.FC<{
     message: string,
@@ -25,7 +26,7 @@ const ErrorDialog: React.FC<{
             <AlertDialogOverlay>
                 <AlertDialogContent>
                     <AlertDialogHeader color="var(--primary)" fontSize='lg' fontWeight='bold'>
-                        ERROR
+                        {localizedStrings.error}
                     </AlertDialogHeader>
 
                     <AlertDialogBody backgroundColor="var(--secondary)" color="var(--primary)">
@@ -34,7 +35,7 @@ const ErrorDialog: React.FC<{
 
                     <AlertDialogFooter justifyContent="center">
                         <Button ref={cancelRef} onClick={onClose}>
-                            OK
+                            {localizedStrings.ok}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>

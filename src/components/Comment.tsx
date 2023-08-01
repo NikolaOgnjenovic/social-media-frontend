@@ -5,6 +5,7 @@ import {Comment} from "../types/global";
 import * as commentService from "../services/CommentService.ts";
 import ErrorDialog from "./ErrorDialog.tsx";
 import GenericConfirmationDialog from "./GenericConfirmationDialog.tsx";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 interface Props {
     comment: Comment;
@@ -51,7 +52,7 @@ export const CommentFC: React.FC<Props> = ({comment, setComments, userId}) => {
                 })
             });
         } catch {
-            setErrorMessage("Failed to like comment. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.comments.errors.like);
             handleOpenErrorMessageDialog();
         }
     }
@@ -61,7 +62,7 @@ export const CommentFC: React.FC<Props> = ({comment, setComments, userId}) => {
         try {
             setComments(await commentService.deleteComment(commentId));
         } catch {
-            setErrorMessage("Failed to delete comment. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.comments.errors.delete);
             handleOpenErrorMessageDialog();
         }
     }
@@ -92,30 +93,30 @@ export const CommentFC: React.FC<Props> = ({comment, setComments, userId}) => {
                 {!commentIsLiked &&
                     <button className="like-button" type="submit"
                             onClick={() => handleCommentLike(comment.likeCount + 1)}>
-                        <img src="/not_liked.svg" alt="Like"/>
+                        <img src="/not_liked.svg" alt={localizedStrings.like}/>
                     </button>
                 }
 
                 {commentIsLiked &&
                     <button className="like-button" type="submit"
                             onClick={() => handleCommentLike(comment.likeCount - 1)}>
-                        <img src="/liked.svg" alt="Unlike"/>
+                        <img src="/liked.svg" alt={localizedStrings.unlike}/>
                     </button>
                 }
-                <span className="like-counter">{comment.likeCount} likes</span>
+                <span className="like-counter">{comment.likeCount} {localizedStrings.likes}</span>
             </div>
 
             {comment.authorId === getUserId() && (
                 <button className="delete-button" type="submit"
                         onClick={() => handleOpenCommentDeletionDialog(comment.id)}>
-                    <img src="/delete.svg" alt="Delete"/>
+                    <img src="/delete.svg" alt={localizedStrings.delete}/>
                 </button>
             )}
 
             {
                 showCommentDeletionDialog &&
                 <GenericConfirmationDialog
-                    message="Delete comment"
+                    message={localizedStrings.comments.deleteComment}
                     isOpen={showCommentDeletionDialog}
                     onConfirm={() => {
                         handleCommentDelete(commentDeletionId);

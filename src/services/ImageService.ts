@@ -144,7 +144,6 @@ export async function updateImageLikeCount(id: number, updatedLikeCount: number)
     }
 
     images = updatedImages;
-    console.table(images);
     return updatedImages;
 }
 
@@ -184,7 +183,6 @@ export async function updateImageFolderId(id: number, updatedFolderId: number): 
 export async function updateImageEditorIds(id: number, updatedEditorIds: number[]): Promise<Image[]> {
     if (images.length === 0) {
         images = await getImages();
-        console.log("Empty images on update editor ids");
     }
 
     const response = await fetch(BACKEND_URL + "/api/v1/images/" + id + "/editor-ids", {

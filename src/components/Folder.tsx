@@ -4,6 +4,7 @@ import * as folderService from "../services/FolderService";
 import {FolderImage} from "./FolderImage";
 import GenericConfirmationDialog from "./GenericConfirmationDialog";
 import ErrorDialog from "./ErrorDialog.tsx";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 interface Props {
     folder: Folder,
@@ -34,7 +35,7 @@ export const FolderFC: React.FC<Props> = ({
         try {
             setFolders(await folderService.deleteFolder(folders, folderId));
         } catch {
-            setErrorMessage("Failed to delete folder. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.folders.errors.delete);
             handleOpenErrorMessageDialog();
         }
     }
@@ -81,7 +82,7 @@ export const FolderFC: React.FC<Props> = ({
             <p className="folder-title">{folder.title}</p>
 
             <button className="image-button" type="submit" onClick={handleOpenFolderDeletionDialog}>
-                <img src="/delete.svg" alt="Delete"/>
+                <img src="/delete.svg" alt={localizedStrings.delete}/>
             </button>
 
             {images
@@ -98,7 +99,7 @@ export const FolderFC: React.FC<Props> = ({
             {
                 showFolderDeletionDialog &&
                 <GenericConfirmationDialog
-                    message="Delete folder"
+                    message={localizedStrings.folders.deleteFolder}
                     isOpen={showFolderDeletionDialog}
                     onConfirm={() => {
                         handleFolderDelete(folder.id);

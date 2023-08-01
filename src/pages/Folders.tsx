@@ -8,6 +8,7 @@ import {getUsers} from '../services/UserService';
 import {FolderFC} from '../components/Folder';
 import '../css/folders.css';
 import ErrorDialog from "../components/ErrorDialog.tsx";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 function Folders() {
     const navigate = useNavigate();
@@ -27,7 +28,7 @@ function Folders() {
     const DEFAULT_FOLDER: Folder = {
         id: -1,
         authorId: getUserId(),
-        title: "All of your images"
+        title: localizedStrings.folders.allImages
     };
 
     // Errors
@@ -56,7 +57,7 @@ function Folders() {
     async function handleFolderCreate(authorId: number) {
         // Title length validation
         if (newFolderTitle.length === 0) {
-            setErrorMessage("Please input a title for your folder.");
+            setErrorMessage(localizedStrings.folders.errors.title);
             handleOpenErrorMessageDialog();
             return;
         }
@@ -64,7 +65,7 @@ function Folders() {
         try {
             setFolders(await createFolder(authorId, newFolderTitle));
         } catch {
-            setErrorMessage("Failed to create folder. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.folders.errors.upload);
             handleOpenErrorMessageDialog();
         }
     }
@@ -86,18 +87,18 @@ function Folders() {
         <>
             <div className={"flex-row-centered-container"}>
                 <div id="folder-input">
-                    <p className={"title"}>Create a folder</p>
+                    <p className={"title"}>{localizedStrings.folders.createFolder}</p>
 
                     <input
                         type="text"
                         id="folder-title-input"
                         className="folder-title-input"
-                        placeholder="Folder title"
+                        placeholder={localizedStrings.folders.folderTitlePlaceholder}
                         onChange={(e) => setNewFolderTitle(e.target.value)}
                     />
 
                     <button className="image-button" type="submit" onClick={() => handleFolderCreate(getUserId())}>
-                        <img src="/create_folder.svg" alt="Create folder"/>
+                        <img src="/create_folder.svg" alt={localizedStrings.folders.createFolder}/>
                     </button>
                 </div>
             </div>

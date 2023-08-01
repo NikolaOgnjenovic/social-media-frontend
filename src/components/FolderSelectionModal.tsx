@@ -39,7 +39,10 @@ const FolderSelectionModal: React.FC<Props> = ({imageFolderId, folders, onSelect
                 <button onClick={handleConfirmSelection} disabled={!selectedFolderId}>
                     Confirm
                 </button>
-                <button onClick={onCloseModal}>Cancel</button>
+                
+                <button onClick={onCloseModal}>
+                    Cancel
+                </button>
             </div>
         </div>
     );

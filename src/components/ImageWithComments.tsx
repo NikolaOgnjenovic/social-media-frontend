@@ -8,6 +8,7 @@ import GenericConfirmationDialog from "./GenericConfirmationDialog";
 import ErrorDialog from "./ErrorDialog.tsx";
 import {getUserLikedImageIds, getUsernameById, updateUserLikedImageIds} from "../services/UserService.ts";
 import {CommentFC} from "./Comment.tsx";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 export const ImageWithComments: React.FC<{
     image: Image,
@@ -48,13 +49,13 @@ export const ImageWithComments: React.FC<{
         imageService.getCompressedImageFilePath(image.id).then((url) => setImageUrl(url)).catch((error) => {
             console.log(error);
         });
-        
+
     }, []);
 
     // Creates a comment and updates the comments state variable
     async function handleCommentCreate(newCommentText: string) {
         if (newCommentText.length === 0) {
-            setErrorMessage("Please input a message for your comment.");
+            setErrorMessage(localizedStrings.comments.errors.text);
             handleOpenErrorMessageDialog();
             return;
         }
@@ -63,7 +64,7 @@ export const ImageWithComments: React.FC<{
             const createdComment = await commentService.createComment(userId, image.id, newCommentText);
             setComments((prevComments: Comment[]) => [...prevComments, createdComment]); // Update state with the new comment
         } catch {
-            setErrorMessage("Failed to create comment. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.comments.errors.upload);
             handleOpenErrorMessageDialog();
         }
     }
@@ -86,7 +87,7 @@ export const ImageWithComments: React.FC<{
                 })
             });
         } catch {
-            setErrorMessage("Failed to like image. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.like);
             handleOpenErrorMessageDialog();
         }
     }
@@ -104,7 +105,7 @@ export const ImageWithComments: React.FC<{
         try {
             setImages(await imageService.deleteImage(image.id, imageUrl));
         } catch {
-            setErrorMessage("Failed to delete image. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.delete);
             handleOpenErrorMessageDialog();
         }
     }
@@ -127,14 +128,14 @@ export const ImageWithComments: React.FC<{
 
     return (
         <div className="image-container">
-            <p className="author">Author: {imageAuthorUsername}</p>
+            <p className="author">{localizedStrings.author} {imageAuthorUsername}</p>
 
             {imageUrl &&
-                <img className="image" src={imageUrl} alt={`Image ${image.id}`}/>
+                <img className="image" src={imageUrl} alt={`${localizedStrings.images.imageAlt} ${image.id}`}/>
             }
 
             {!imageUrl &&
-                <p className="author">Loading image...</p>
+                <p className="author">{localizedStrings.images.loadingImage}</p>
             }
 
             <p className="title">{image.title}</p>
@@ -149,24 +150,24 @@ export const ImageWithComments: React.FC<{
 
             {image.editorIds.includes(getUserId()) && (
                 <button className="delete-button" type="submit" onClick={handleOpenImageDeletionDialog}>
-                    <img src="/delete.svg" alt="Delete"/>
+                    <img src="/delete.svg" alt={localizedStrings.delete}/>
                 </button>
             )}
 
             <div className="interaction-section">
                 {!imageIsLiked &&
                     <button className="like-button" type="submit" onClick={() => handleImageLike(image.likeCount + 1)}>
-                        <img src="/not_liked.svg" alt="Like"/>
+                        <img src="/not_liked.svg" alt={localizedStrings.like}/>
                     </button>
                 }
 
                 {imageIsLiked &&
                     <button className="like-button" type="submit" onClick={() => handleImageLike(image.likeCount - 1)}>
-                        <img src="/liked.svg" alt="Unlike"/>
+                        <img src="/liked.svg" alt={localizedStrings.unlike}/>
                     </button>
                 }
 
-                <span className="like-counter">{image.likeCount} likes</span>
+                <span className="like-counter">{image.likeCount} {localizedStrings.likes}</span>
             </div>
 
             <div className="interaction-section">
@@ -174,19 +175,19 @@ export const ImageWithComments: React.FC<{
                     <input
                         type="text"
                         className="comment-input"
-                        placeholder="Leave a comment"
+                        placeholder={localizedStrings.comments.leaveCommentPlaceholder}
                         value={newCommentText}
                         onChange={(e) => handleCommentTextUpdate(e)}/>
                 </span>
                 <button className="comment-button" type="submit" onClick={() => handleCommentCreate(newCommentText)}>
-                    <img src="/comment.svg" alt="Comment"/>
+                    <img src="/comment.svg" alt={localizedStrings.comments.commentAlt}/>
                 </button>
             </div>
 
             {
                 comments.filter(comment => comment.imageId === image.id).length > 0 &&
                 <button className="toggle-comments-button" onClick={toggleCommentVisibility}>
-                    {showComments ? 'Hide Comments' : 'Show Comments'}
+                    {showComments ? localizedStrings.comments.hideComments : localizedStrings.comments.showComments}
                 </button>
             }
 
@@ -208,7 +209,7 @@ export const ImageWithComments: React.FC<{
             {
                 showImageDeletionDialog &&
                 <GenericConfirmationDialog
-                    message="Delete image"
+                    message={localizedStrings.images.deleteImage}
                     isOpen={showImageDeletionDialog}
                     onConfirm={() => {
                         handleImageDelete();

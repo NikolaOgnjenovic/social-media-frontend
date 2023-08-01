@@ -9,6 +9,7 @@ import "../css/image-with-comments.css";
 import GenericConfirmationDialog from "./GenericConfirmationDialog";
 import ErrorDialog from "./ErrorDialog.tsx";
 import {getUsernameById} from "../services/UserService.ts";
+import {localizedStrings} from "../res/LocalizedStrings.tsx";
 
 export const FolderImage: React.FC<{
     image: Image,
@@ -28,6 +29,7 @@ export const FolderImage: React.FC<{
     const [isEditorUsernamesModalOpen, setIsEditorUsernamesModalOpen] = useState(false);
     const [showImageDeletionDialog, setShowImageDeletionDialog] = useState(false);
     const [editorUsernames, setEditorUsernames] = useState<string>("");
+    const [imageAuthorUsername, setImageAuthorUsername] = useState<string>("");
 
     // Folders
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -36,8 +38,12 @@ export const FolderImage: React.FC<{
     const [showErrorMessageDialog, setShowErrorMessageDialog] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
 
-    // Set editor usernames on component mount
+    // Set image author & editor usernames on component mount
     useEffect(() => {
+        getUsernameById(image.authorId).then((username) => {
+            setImageAuthorUsername(username);
+        });
+
         handleSetEditorUsernames();
     }, []);
 
@@ -72,12 +78,18 @@ export const FolderImage: React.FC<{
         try {
             setImages(await imageService.deleteImage(image.id, imageUrl));
         } catch {
-            setErrorMessage("Failed to delete image. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.delete);
             handleOpenErrorMessageDialog();
         }
     }
 
     function handleOpenFolderModal() {
+        if (folders.length === 0) {
+            setErrorMessage(localizedStrings.folders.errors.noFolders);
+            handleOpenErrorMessageDialog();
+            return;
+        }
+
         setIsFolderModalOpen(true);
     }
 
@@ -90,7 +102,7 @@ export const FolderImage: React.FC<{
         try {
             setImages(await imageService.updateImageFolderId(image.id, folderId));
         } catch {
-            setErrorMessage("Failed to update image folder. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.updateImageFolder);
             handleOpenErrorMessageDialog();
         } finally {
             handleCloseFolderModal();
@@ -98,6 +110,12 @@ export const FolderImage: React.FC<{
     }
 
     function handleOpenEditorUsernamesModal() {
+        if (users.length === 1) {
+            setErrorMessage(localizedStrings.images.errors.openEditors);
+            handleOpenErrorMessageDialog();
+            return;
+        }
+
         setIsEditorUsernamesModalOpen(true);
     }
 
@@ -121,7 +139,7 @@ export const FolderImage: React.FC<{
             });
 
         } catch {
-            setErrorMessage("Failed to update image editors. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.updateEditors);
             handleOpenErrorMessageDialog();
         }
     }
@@ -149,7 +167,7 @@ export const FolderImage: React.FC<{
 
     function handleOpenImageEditingModal() {
         if (imageUrl === undefined) {
-            setErrorMessage("Failed to open image editing dialog because the image is missing. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.openImageEditor);
             handleOpenErrorMessageDialog();
         } else {
             setIsImageEditingModalOpen(true);
@@ -171,7 +189,7 @@ export const FolderImage: React.FC<{
                 });
             });
         } catch {
-            setErrorMessage("Failed to update image file. Please check if you're connected to the internet and try again.");
+            setErrorMessage(localizedStrings.images.errors.updateFile);
             handleOpenErrorMessageDialog();
         }
     }
@@ -186,29 +204,35 @@ export const FolderImage: React.FC<{
 
     return (
         <div className="image-container" style={{width: "100%"}}>
-            <p className="author">Author: {image.authorId}</p>
-            <img className="image" src={imageUrl} alt={`Image ${image.id}`}/>
+            <p className="author">{localizedStrings.author} {imageAuthorUsername}</p>
+            <img className="image" src={imageUrl} alt={`${localizedStrings.images.imageAlt} ${image.id}`}/>
             <p className="title">{image.title}</p>
-            <p className="tags">Tags: {image.tags}</p>
-            <p className="tags">Editors: {editorUsernames}</p>
+            <div className="extracted-hashtags">
+                <ul>
+                    {image.tags.map((hashtag, index) => (
+                        <li key={index}>{hashtag}</li>
+                    ))}
+                </ul>
+            </div>
+            <p className="tags">{localizedStrings.editors} {editorUsernames}</p>
 
             <div className={"horizontal-group"}>
                 <button className="image-button" type="submit" onClick={() => handleOpenFolderModal()}>
-                    <img src="/folder.svg" alt="Update folder"/>
+                    <img src="/folder.svg" alt={localizedStrings.images.updateFolder}/>
                 </button>
 
                 {image.editorIds.includes(getUserId()) && (
                     <>
                         <button className="image-button" type="submit" onClick={() => handleOpenEditorUsernamesModal()}>
-                            <img src="/editors.svg" alt="Update editors"/>
+                            <img src="/editors.svg" alt={localizedStrings.images.updateEditors}/>
                         </button>
 
                         <button className="image-button" type="submit" onClick={handleOpenImageDeletionDialog}>
-                            <img src="/delete.svg" alt="Delete"/>
+                            <img src="/delete.svg" alt={localizedStrings.delete}/>
                         </button>
 
                         <button className="image-button" type="submit" onClick={() => handleOpenImageEditingModal()}>
-                            <img src="/edit_image.svg" alt="Edit image"/>
+                            <img src="/edit_image.svg" alt={localizedStrings.images.editImage}/>
                         </button>
                     </>
                 )}
@@ -244,7 +268,7 @@ export const FolderImage: React.FC<{
                 {
                     showImageDeletionDialog &&
                     <GenericConfirmationDialog
-                        message="Delete image"
+                        message={localizedStrings.images.deleteImage}
                         isOpen={showImageDeletionDialog}
                         onConfirm={() => {
                             handleImageDelete();
